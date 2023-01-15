@@ -20,6 +20,11 @@ local servername = ('Сервер неизвестен')
 local promo = ('mason')
 local referal = ('Farmila_Ultimate')
 
+local rep = false
+local loop = false
+local packet, veh = {}, {}
+local counter = 0
+
 local count = 0
 local sekund = 0
 local minut = 0
@@ -228,7 +233,6 @@ end
 function pobeg()
 	if cfg.settings.ubegatsospawna == 1 then
 		newTask(function()
-			wait(5000)
 			local x, y = getPosition()
 			if x >= 1700 and x <= 1800 and y >= -1950 and y <= -1850 then -- old losantos spawn
 				print('[\x1b[0;33mFarmila Ultimate\x1b[37m] \x1b[0;36mВы на старом спавне ЛС.\x1b[0;37m') 
@@ -409,6 +413,7 @@ end
 -----ПРИ СПАВНЕ С РАНЕЕ ЗАРЕГАННОГО АККА
 function sampev.onSetInterior(interior)
 	if interior == 0 and joinedlog then
+		loggedin()
 		timeron()
 		pobeg()
 		joinedlog = false
@@ -464,6 +469,12 @@ function sampev.onServerMessage(color, text)
 end
 
 function onPrintLog(text)
+	if text:find('^Disconnected%.') then
+		recreset()
+	end
+	if text:find('^The connection was lost%. Reconnecting in %d+ seconds%.') then
+		recreset()
+	end
 	if text:find('^Bad nickname$') then 
 		generatenick()
 	end
@@ -482,34 +493,35 @@ function admsobes()
 	if cfg.telegram.admsobesuveda == 1 then
 		sendtg('[Farmila Ultimate]\n\nТелепортировали на собеседование\nНик: '..nick..'\nСервер: '..servername..'\n\nПерезаходим на сервер')
 	end
-	recreset()
+	recreset(1)
 end
 
 function admspawn()
 	if cfg.telegram.admspawnuveda == 1 then
 		sendtg('[Farmila Ultimate]\n\nЗаспавнил админ\nНик: '..nick..'\nСервер: '..servername..'\nНик админа: '..adminname..'\n\nПерезаходим на сервер')
 	end
-	recreset()
+	recreset(1)
 end
 
 function admtp()
 	if cfg.telegram.admtpuveda == 1 then
 		sendtg('[Farmila Ultimate]\n\nТелепортировал админ\nНик: '..nick..'\nСервер: '..servername..'\nНик админа: '..adminname..'\n\nПерезаходим на сервер')
 	end
-	recreset()
+	recreset(1)
 end
 
 function admcoordtp()
 	if cfg.telegram.admcoordtpuveda == 1 then
 		sendtg('[Farmila Ultimate]\n\nТелепортировал админ по кордам\nНик: '..nick..'\nСервер: '..servername..'\nНик админа: '..adminname..'\n\nПерезаходим на сервер')	
 	end
-	recreset()
+	recreset(1)
 end
 
 function kicked()
 	if cfg.telegram.kickuveda == 1 then
 		sendtg('[Farmila Ultimate]\n\nКикнули\nНик: '..nick..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'')
 	end
+	recreset(1)
 end
 
 function jailed()
@@ -539,24 +551,24 @@ function connected()
 end
 
 function noipban()
-	timerstop = true
 	generatenick()
 	if cfg.telegram.noipbanuveda == 1 then
-		sendtg('[Farmila Ultimate]\n\nЗабанили\nНик: '..getNick()..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\n\nАккаунт прожил: '..chas..' ч. '..minut..' мин. '..sekund..' сек. ')
+		sendtg('[Farmila Ultimate]\n\nЗабанили\nНик: '..nick..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\n\nАккаунт прожил: '..chas..' ч. '..minut..' мин. '..sekund..' сек. ')
 	end
+	timerstop = true
 end
 
 function ipban()
-	timerstop = true
 	generatenick()
 	if cfg.telegram.ipbanuveda == 1 then
-		sendtg('[Farmila Ultimate]\n\nЗабанили по IP \nНик: '..getNick()..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\n\nАккаунт прожил: '..chas..' ч. '..minut..' мин. '..sekund..' сек. ')
+		sendtg('[Farmila Ultimate]\n\nЗабанили по IP \nНик: '..nick..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\n\nАккаунт прожил: '..chas..' ч. '..minut..' мин. '..sekund..' сек. ')
 	end
+	timerstop = true
 end
 
 function lvlup()
 	if cfg.telegram.levelupuveda == 1 then
-		sendtg('[Farmila Ultimate]\n\nПовысил уровень \nНик: '..getNick()..'\nСервер: '..servername..'\nНовый Уровень: '..lvl)
+		sendtg('[Farmila Ultimate]\n\nПовысил уровень \nНик: '..nick..'\nСервер: '..servername..'\nНовый Уровень: '..pdlvl)
 	end
 end
 
@@ -575,6 +587,9 @@ function timeron()
 					minut = minut - 60
 				end
 			else
+				secund = 0
+				minut = 0
+				chas = 0
 				break
 			end
 		end
@@ -586,24 +601,25 @@ function onRunCommand(cmd)
 	if cmd:find'!test' then
 		sendtg('[Farmila Ultimate]\n\nТест уведомлений Telegram\nВаш сервер: '..servername)
 	end
+	if cmd:find('!play') or cmd:find('!stop') or cmd:find('!loop') then
+		runRoute(cmd)
+		return false
+	end
 end
 
 -----ДЛЯ СБРОСА ВСЕХ ПЕРЕМЕННЫХ ПРИ РЕКОННЕКТЕ
-function recreset(state)
+function recreset(recstate)
+	if counter > 1 then
+		runRoute('!stop')
+	end
 	promoactivated = false
-	timerstop = false
 	napisal = false
-	rep = false
 	counter = 0
-	secund = 0
 	count = 0
-	minut = 0
-	chas = 0
-	if state == 1 then
+	if recstate == 1 then
 		reconnect()
 	end
 end	
-
 -----РАНДОМ СКИН
 function randomskin()
 	newTask(function()
@@ -623,14 +639,12 @@ function onSendRPC(id, bs)
 	if id == 128 then
 		return true
 	end
-	if id == 53 then
-		recreset(0)
-	end
 end
 
 -----ТУТ ВСЮ ХУЙНЮ КОТОРАЯ БУДЕТ ПРОИСХОДИТЬ ПРИ СПАВНЕ АККА ЗАРЕГАННОГО БОТОМ
 function onReceiveRPC(id, bs)
 	if id == 129 and joinedreg then
+		registered()
 		timeron()
 		pobeg()
 		joinedreg = false
@@ -657,15 +671,6 @@ function routefinished()
 	sendInput('/beg')
 	print('[\x1b[0;33mFarmila Ultimate\x1b[37m] \x1b[0;36mАккаунт начал стоять зарабатывать деньги.\x1b[0;37m')
 end
-
------ПРОИГРЫВАТЕЛЬ МАРШРУТОВ
---Author: Shamanije
---URL: https://blast.hk/members/163165/
---Version: 1.2.1
-local rep = false
-local loop = false
-local packet, veh = {}, {}
-local counter = 0
 
 local bitstream = {
 	onfoot = bitStream.new(),
@@ -825,16 +830,14 @@ function runRoute(act)
 		else
 			print('route doesnt exist')
 		end
-	elseif act:find('!loop') then
-		if rep then loop = not loop; print(loop and 'looping current route' or 'loop off') else print('not playing any route') end
 	elseif act:find('!stop') then
-		if counter > 1 then
-			rep = not rep
+		if counter >= 1 then
+			rep = false
+			print('[\x1b[0;33mFarmila Ultimate\x1b[37m] \x1b[0;36mОстановились на пакете номер: '..counter..'\x1b[0;37m')
+			counter = 0
 		else
 			print('not playing any route')
 		end
-		if not rep then setQuaternion(packet[counter].qw, packet[counter].qx, packet[counter].qy, packet[counter].qz) end
-		print(rep and 'playing resumed' or 'stopped on packet: '.. counter)
 	end
 end
 
