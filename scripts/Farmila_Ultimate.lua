@@ -17,6 +17,7 @@ local cfg = inicfg.load(nil, 'Farmila_Settings')
 local ffi = require('ffi')
 
 local servername = ('Сервер неизвестен')
+local serverip = ('Айпи сервера неизвестен')
 local promo = ('mason')
 local referal = ('Farmila_Ultimate')
 
@@ -138,12 +139,15 @@ function logaccount()
 	-- Nick_Name | password | level | ip | money | servername | regip |
 	local response = requests.get('https://api.ipify.org')
 	if response.status_code == 200 then
-		local regip = response.text	
-		acclog(savenick..' | '..cfg.settings.pass..' | '..lvl..' | '..serverip..' | '..money..' | '..servername..' | '..regip..'\n')
+		local regip = response.text
+		acclog(nick..' | '..cfg.settings.pass..' | '..lvl..' | '..serverip..' | '..money..' | '..servername..' | '..regip..'\n')
 		print('[\x1b[0;33mFarmila Ultimate\x1b[37m] \x1b[0;36mАккаунт успешно сохранен с рег айпи.\x1b[0;37m')
 	else
-		acclog(savenick..' | '..cfg.settings.pass..' | '..lvl..' | '..serverip..' | '..money..' | '..servername..'\n')
+		acclog(nick..' | '..cfg.settings.pass..' | '..lvl..' | '..serverip..' | '..money..' | '..servername..'\n')
 		print('[\x1b[0;33mFarmila Ultimate\x1b[37m] \x1b[0;36mАккаунт успешно сохранен без рег айпи.\x1b[0;37m')
+	end
+	if cfg.sampstore.vilagivat == 0 then
+		generatenick()
 	end
 end
 
@@ -152,6 +156,8 @@ function sampstoreupload()
 	newTask(function()
 		sendInput('/mn')
 		repeat wait(0) until promoactivated
+		wait(5000)
+		logaccount()
 		if cfg.sampstore.vilagivat == 1 then
 			local response = requests.get('https://api.ipify.org')
 			if response.status_code == 200 then
@@ -180,6 +186,9 @@ end
 
 -----ПРИ ЗАГРУЗКЕ СКРИПТА
 function onLoad()
+	if cfg.settings.lvlprokachki < 6 then
+		cfg.settings.lvlprokachki = 6
+	end
 	newTask(function()
 		while true do
 			wait(0)
@@ -187,9 +196,7 @@ function onLoad()
 			nick = getNick()
 			money = getMoney()
 			setWindowTitle('[Farmila Ultimate] '..nick..' | '..servername..' | Level: '..lvl..' | Money: '..money)
-			if lvl >= 7 then
-				exit()
-			elseif not napisal and lvl == 6 then
+			if not napisal and lvl >= cfg.settings.lvlprokachki then
 				sampstoreupload()
 				napisal = true
 			end
@@ -231,19 +238,19 @@ end
 
 -----СЪЁБ СО СПАВНА
 function pobeg()
-	if cfg.settings.ubegatsospawna == 1 then
+	if cfg.settings.ubegatsospawna == 1 and lvl < cfg.settings.lvlprokachki then
 		newTask(function()
 			local x, y = getPosition()
 			if x >= 1700 and x <= 1800 and y >= -1950 and y <= -1850 then -- old losantos spawn
-				print('[\x1b[0;33mFarmila Ultimate\x1b[37m] \x1b[0;36mВы на старом спавне ЛС.\x1b[0;37m') 
+				print('[\x1b[0;33mFarmila Ultimate\x1b[37m] \x1b[0;36mВы на старом спавне ЛС.\x1b[0;37m')
 				local put = random(1,50)
 				runRoute('!play lsold'..put)
 			elseif x >= 1000 and x <= 1200 and y >= -1900 and y <= -1700 then  -- new losantos spawn
-				print('[\x1b[0;33mFarmila Ultimate\x1b[37m] \x1b[0;36mВы на новом спавне ЛС.\x1b[0;37m') 
+				print('[\x1b[0;33mFarmila Ultimate\x1b[37m] \x1b[0;36mВы на новом спавне ЛС.\x1b[0;37m')
 				local put = random(1,51)
 				runRoute('!play lsnew'..put)
 			else
-				print('[\x1b[0;33mFarmila Ultimate\x1b[37m] \x1b[0;36mМы не можем понять где вы, маршрут не запущен.\x1b[0;37m')
+				print('[\x1b[0;33mFarmila Ultimate\x1b[37m] \x1b[0;36mВы на спавне СФ/ЛС, либо скрипт не смог определить спавн.\x1b[0;37m')
 			end
 		end)
 	end
@@ -390,14 +397,15 @@ function sampev.onShowDialog(id, style, title, btn1, btn2, text)
 		return false
 	end
 	if title:find('Игровое меню') and not promoactivated then
-		sendDialogResponse(id, 1, 11, '')
+		sendDialogResponse(id, 1, 10, '')
+		promoactivated = true
 		return false
 	end
 	if text:find('Введите') then
 		sendDialogResponse(id, 1, 0, promo)
 		return false
 	end
-	if text:find('Вы действительно хотите использовать промо-код') then
+	if text:find('Вы действительно хотите использовать промо%-код') then
 		sendDialogResponse(id, 1, 0, '')
 		return false
 	end
@@ -445,9 +453,6 @@ function sampev.onServerMessage(color, text)
 		pdlvl = text:match('^Поздравляю! Вы достигли (%d+)%-го уровня!$')
 		lvlup()
 	end
-	if text:find('^%[Подсказка%] Вы успешно активировали промо%-код и получили %$%d+!$') then
-		promoactivated = true
-	end
 	if text:find('^Вы закончили свое лечение%.$') then
 		recreset(1)
 	end
@@ -475,7 +480,7 @@ function onPrintLog(text)
 	if text:find('^The connection was lost%. Reconnecting in %d+ seconds%.') then
 		recreset()
 	end
-	if text:find('^Bad nickname$') then 
+	if text:find('^Bad nickname$') then
 		generatenick()
 	end
 	if text:find('^You are banned$') then
@@ -512,7 +517,7 @@ end
 
 function admcoordtp()
 	if cfg.telegram.admcoordtpuveda == 1 then
-		sendtg('[Farmila Ultimate]\n\nТелепортировал админ по кордам\nНик: '..nick..'\nСервер: '..servername..'\nНик админа: '..adminname..'\n\nПерезаходим на сервер')	
+		sendtg('[Farmila Ultimate]\n\nТелепортировал админ по кордам\nНик: '..nick..'\nСервер: '..servername..'\nНик админа: '..adminname..'\n\nПерезаходим на сервер')
 	end
 	recreset(1)
 end
@@ -577,7 +582,7 @@ function timeron()
 	newTask(function()
 		while true do wait(0)
 			if not timerstop then
-				wait(1000)	
+				wait(1000)
 				sekund = sekund + 1
 				if sekund == 60 then
 					minut = minut + 1
@@ -619,7 +624,7 @@ function recreset(recstate)
 	if recstate == 1 then
 		reconnect()
 	end
-end	
+end
 -----РАНДОМ СКИН
 function randomskin()
 	newTask(function()
@@ -679,7 +684,7 @@ local bitstream = {
 }
 
 function sampev.onSendVehicleSync(data)
-	if rep then 
+	if rep then
 		return false
 	end
 end
@@ -703,27 +708,27 @@ end)
 
 function check_update()
 	if rep then
-		local ok = fillBitStream(getVehicle() ~= 0 and 2 or 1) 
+		local ok = fillBitStream(getVehicle() ~= 0 and 2 or 1)
 		if ok then
 			if getVehicle() ~= 0 then bitstream.incar:sendPacket() else bitstream.onfoot:sendPacket() end
 			setPosition(packet[counter].x, packet[counter].y, packet[counter].z)
 			counter = counter + 1
 			if counter%20 == 0 then
 				local aok = fillBitStream(3)
-				if aok then 
+				if aok then
 					bitstream.aim:sendPacket()
-				else 
+				else
 					err()
 				end
 			end
 		else
 			err()
 		end
-					
+
 		bitstream.onfoot:reset()
 		bitstream.incar:reset()
 		bitstream.aim:reset()
-					
+
 		if counter == #packet then
 			if not loop then
 				print('[\x1b[0;33mFarmila Ultimate\x1b[37m] \x1b[0;36mМаршрут завершен.\x1b[0;37m')
@@ -772,8 +777,8 @@ function fillBitStream(mode)
 		bs:writeUInt16(0)
 		bs:writeFloat(0)
 		bs:writeFloat(0)
-		
-	elseif mode == 1 then		
+
+	elseif mode == 1 then
 		local bs = bitstream.onfoot
 		bs:writeUInt8(packet[counter].packetId)
 		bs:writeUInt16(packet[counter].lr)
@@ -799,7 +804,7 @@ function fillBitStream(mode)
 		bs:writeUInt16(0)
 		bs:writeUInt16(packet[counter].anim)
 		bs:writeUInt16(packet[counter].flags)
-		
+
 	elseif mode == 3 then
 		local bs = bitstream.aim
 		bs:writeUInt8(203)
@@ -814,7 +819,7 @@ function fillBitStream(mode)
 		bs:writeUInt8(packet[counter].zoom)
 		bs:writeUInt8(packet[counter].wstate)
 		bs:writeUInt8(packet[counter].unk)
-		
+
 	else return false end
 	return true
 end
