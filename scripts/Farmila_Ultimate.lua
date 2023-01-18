@@ -1,9 +1,3 @@
---Кодеры: Haymiritch, Chocomami1488 (Ведро говна)
---Выкладывать каку только под нашим именем(чтоби знали кому на овощебазе дали notepad++)
-
---Спасибо Shamanije за Route Player
---Спасибо Dimiano за SlapFix и Animfix
-
 os.execute('color 0')
 
 require('addon')
@@ -12,10 +6,12 @@ local sampev = require('samp.events')
 local vector3d = require('libs.vector3d')
 local ss = require('samp-store')
 local requests = require('requests')
-local inicfg = require 'inicfg'
+local inicfg = require('inicfg')
 local cfg = inicfg.load(nil, 'Farmila_Settings')
 local ffi = require('ffi')
+local socket = require 'socket'
 
+local temppass = ('')
 local servername = ('Сервер неизвестен')
 local serverip = ('Айпи сервера неизвестен')
 local promo = ('mason')
@@ -140,10 +136,10 @@ function logaccount()
 	local response = requests.get('https://api.ipify.org')
 	if response.status_code == 200 then
 		local regip = response.text
-		acclog(nick..' | '..cfg.settings.pass..' | '..lvl..' | '..serverip..' | '..money..' | '..servername..' | '..regip..'\n')
+		acclog(nick..' | '..pass..' | '..lvl..' | '..serverip..' | '..money..' | '..servername..' | '..regip..'\n')
 		print('[\x1b[0;33mFarmila Ultimate\x1b[37m] \x1b[0;36mАккаунт успешно сохранен с рег айпи.\x1b[0;37m')
 	else
-		acclog(nick..' | '..cfg.settings.pass..' | '..lvl..' | '..serverip..' | '..money..' | '..servername..'\n')
+		acclog(nick..' | '..pass..' | '..lvl..' | '..serverip..' | '..money..' | '..servername..'\n')
 		print('[\x1b[0;33mFarmila Ultimate\x1b[37m] \x1b[0;36mАккаунт успешно сохранен без рег айпи.\x1b[0;37m')
 	end
 	if cfg.sampstore.vilagivat == 0 then
@@ -162,7 +158,7 @@ function sampstoreupload()
 			local response = requests.get('https://api.ipify.org')
 			if response.status_code == 200 then
 				local regip = response.text
-				local upload_res = ss.UploadAccount(serverip, cfg.sampstore.price, namen, cfg.settings.pass, cfg.sampstore.infopokupo, cfg.sampstore.infoakk, regip)
+				local upload_res = ss.UploadAccount(serverip, cfg.sampstore.price, namen, pass, cfg.sampstore.infopokupo, cfg.sampstore.infoakk, regip)
 				if upload_res then
 					print('[\x1b[0;33mFarmila Ultimate\x1b[37m] \x1b[0;36mАккаунт успешно выложен на самп-стор.\x1b[0;37m')
 					if cfg.telegram.ssakkuveda == 1 then
@@ -171,7 +167,7 @@ function sampstoreupload()
 					generatenick()
 				end
 			else
-				local upload_res = ss.UploadAccount(serverip, cfg.sampstore.price, namen, cfg.settings.pass, cfg.sampstore.infopokupo, cfg.sampstore.infoakk, _)
+				local upload_res = ss.UploadAccount(serverip, cfg.sampstore.price, namen, pass, cfg.sampstore.infopokupo, cfg.sampstore.infoakk, _)
 				if upload_res then
 					print('[\x1b[0;33mFarmila Ultimate\x1b[37m] \x1b[0;36mАккаунт успешно выложен на самп-стор без рег айпи.\x1b[0;37m')
 					if cfg.telegram.ssakkuveda == 1 then
@@ -189,6 +185,11 @@ function onLoad()
 	if cfg.settings.lvlprokachki < 6 then
 		cfg.settings.lvlprokachki = 6
 	end
+	if cfg.settings.randompass == 1 then
+		generatepass()
+	else
+		pass = cfg.settings.pass
+	end
 	newTask(function()
 		while true do
 			wait(0)
@@ -196,13 +197,9 @@ function onLoad()
 			nick = getNick()
 			money = getMoney()
 			setWindowTitle('[Farmila Ultimate] '..nick..' | '..servername..' | Level: '..lvl..' | Money: '..money)
-			if not napisal and lvl >= cfg.settings.lvlprokachki then
-				sampstoreupload()
-				napisal = true
-			end
 		end
 	end)
-	if cfg.settings.avtosmenanicka == 1 then
+	if cfg.settings.randomnick == 1 then
 		generatenick()
 	end
 	if cfg.proxy.zahodsproxy == 1 then
@@ -218,12 +215,16 @@ end
 
 -----КЛЮЧ ГЕНА ХУЙНИ
 function random(min, max)
-	math.randomseed(os.time()^3.14)
+	local ms = tostring(math.ceil(socket.gettime()))
+	math.randomseed(os.time()+ms)
 	return math.random(min, max)
 end
 
 -----ГЕНЕРАЦИЯ РАНДОМ НИКА
 function generatenick()
+	if cfg.settings.randompass == 1 then
+		generatepass()
+	end
 	local names_and_surnames = {}
 	for line in io.lines(getPath('config\\randomnick.txt')) do
 		names_and_surnames[#names_and_surnames + 1] = line
@@ -233,12 +234,21 @@ function generatenick()
     local nick = ('%s_%s'):format(name, surname)
     setNick(nick)
 	print('[\x1b[0;33mFarmila Ultimate\x1b[37m] \x1b[0;36mИзменили ник на: \x1b[0;32m'..getNick()..'\x1b[37m.')
-	recreset(1)
+	reconnect()
 end
+
+function generatepass()
+	for k = random(8,8),1,-1 do
+		temppass = temppass..string.char(math.random(97, 122))
+	end
+	pass = temppass
+	temppass = ''
+end
+
 
 -----СЪЁБ СО СПАВНА
 function pobeg()
-	if cfg.settings.ubegatsospawna == 1 and lvl < cfg.settings.lvlprokachki then
+	if cfg.settings.spawnroute == 1 and lvl < cfg.settings.lvlprokachki then
 		newTask(function()
 			local x, y = getPosition()
 			if x >= 1700 and x <= 1800 and y >= -1950 and y <= -1850 then -- old losantos spawn
@@ -256,112 +266,122 @@ function pobeg()
 	end
 end
 
+function resetall()
+	if counter > 1 then
+		runRoute('!stop')
+	end
+	promoactivated = false
+	napisal = false
+	counter = 0
+	count = 0
+end
+
 -----ПРИ ПОДКЛЮЧЕНИИ
 function onConnect()
+	resetall()
 	serverip = getIP()
 	if serverip == '185.169.134.3:7777' then
 		servername = ('Phoenix')
 		promo = cfg.promo.phoenix
-		referal = cfg.referal.referalphoenix
+		referal = cfg.referal.phoenix
 	elseif serverip == '185.169.134.4:7777' then
 		servername = ('Tucson')
 		promo = cfg.promo.tucson
-		referal = cfg.referal.referaltucson
+		referal = cfg.referal.tucson
 	elseif serverip == '185.169.134.43:7777' then
 		servername = ('Scottdale')
 		promo = cfg.promo.scottdale
-		referal = cfg.referal.referalscottdale
+		referal = cfg.referal.scottdale
 	elseif serverip == '185.169.134.44:7777' then
 		servername = ('Chandler')
 		promo = cfg.promo.chandler
-		referal = cfg.referal.referalchandler
+		referal = cfg.referal.chandler
 	elseif serverip == '185.169.134.45:7777' then
 		servername = ('Brainburg')
 		promo = cfg.promo.brainburg
-		referal = cfg.referal.referalbrainburg
+		referal = cfg.referal.brainburg
 	elseif serverip == '185.169.134.5:7777' then
 		servername = ('Saint-rose')
 		promo = cfg.promo.saintrose
-		referal = cfg.referal.referalsaintrose
+		referal = cfg.referal.saintrose
 	elseif serverip == '185.169.134.59:7777' then
 		servername = ('Mesa')
 		promo = cfg.promo.mesa
-		referal = cfg.referal.referalmesa
+		referal = cfg.referal.mesa
 	elseif serverip == '185.169.134.61:7777' then
 		servername = ('Red-rock')
 		promo = cfg.promo.redrock
-		referal = cfg.referal.referalredrock
+		referal = cfg.referal.redrock
 	elseif serverip == '185.169.134.107:7777' then
 		servername = ('Yuma')
 		promo = cfg.promo.yuma
-		referal = cfg.referal.referalyuma
+		referal = cfg.referal.yuma
 	elseif serverip == '185.169.134.109:7777' then
 		servername = ('Surprise')
 		promo = cfg.promo.surprise
-		referal = cfg.referal.referalsurprise
+		referal = cfg.referal.surprise
 	elseif serverip == '185.169.134.166:7777' then
 		servername = ('Prescott')
 		promo = cfg.promo.prescott
-		referal = cfg.referal.referalprescott
+		referal = cfg.referal.prescott
 	elseif serverip == '185.169.134.171:7777' then
 		servername = ('Glendale')
 		promo = cfg.promo.glendale
-		referal = cfg.referal.referalglendale
+		referal = cfg.referal.glendale
 	elseif serverip == '185.169.134.172:7777' then
 		servername = ('Kingman')
 		promo = cfg.promo.kingman
-		referal = cfg.referal.referalkingman
+		referal = cfg.referal.kingman
 	elseif serverip == '185.169.134.173:7777' then
 		servername = ('Winslow')
 		promo = cfg.promo.winslow
-		referal = cfg.referal.referalwinslow
+		referal = cfg.referal.winslow
 	elseif serverip == '185.169.134.174:7777' then
 		servername = ('Payson')
 		promo = cfg.promo.payson
-		referal = cfg.referal.referalpayson
+		referal = cfg.referal.payson
 	elseif serverip == '80.66.82.191:7777' then
 		servername = ('Gilbert')
 		promo = cfg.promo.gilbert
-		referal = cfg.referal.referalgilbert
+		referal = cfg.referal.gilbert
 	elseif serverip == '80.66.82.190:7777' then
 		servername = ('Showlow')
 		promo = cfg.promo.showlow
-		referal = cfg.referal.referalshowlow
+		referal = cfg.referal.showlow
 	elseif serverip == '80.66.82.188:7777' then
 		servername = ('Casa-Grande')
 		promo = cfg.promo.casagrande
-		referal = cfg.referal.referalcasagrande
+		referal = cfg.referal.casagrande
 	elseif serverip == '80.66.82.168:7777' then
 		servername = ('Page')
 		promo = cfg.promo.page
-		referal = cfg.referal.referalpage
+		referal = cfg.referal.page
 	elseif serverip == '80.66.82.159:7777' then
 		servername = ('Sun-City')
 		promo = cfg.promo.suncity
-		referal = cfg.referal.referalsuncity
+		referal = cfg.referal.suncity
 	elseif serverip == '80.66.82.200:7777' then
 		servername = ('Queen-Creek')
 		promo = cfg.promo.queencreek
-		referal = cfg.referal.referalqueencreek
+		referal = cfg.referal.queencreek
 	elseif serverip == '80.66.82.144:7777' then
 		servername = ('Sedona')
 		promo = cfg.promo.sedona
-		referal = cfg.referal.referalsedona
+		referal = cfg.referal.sedona
 	elseif serverip == '80.66.82.132:7777' then
 		servername = ('Holiday')
 		promo = cfg.promo.holiday
-		referal = cfg.referal.referalholiday
+		referal = cfg.referal.holiday
 	elseif serverip == '80.66.82.128:7777' then
 		servername = ('Wednesday')
 		promo = cfg.promo.wednesday
-		referal = cfg.referal.referalwednesday
+		referal = cfg.referal.wednesday
 	end
 end
-
 -----ДИАЛОГИ
 function sampev.onShowDialog(id, style, title, btn1, btn2, text)
 	if title:find('1/4') then
-        sendDialogResponse(id, 1, 0, cfg.settings.pass)
+        sendDialogResponse(id, 1, 0, pass)
         return false
     end
     if title:find('2/4') then
@@ -387,7 +407,7 @@ function sampev.onShowDialog(id, style, title, btn1, btn2, text)
 		return false
 	end
 	if title:find('Авторизация') then
-		sendDialogResponse(id, 1, 0, cfg.settings.pass)
+		sendDialogResponse(id, 1, 0, pass)
 		joinedlog = true
 		joinedreg = false
 		return false
@@ -401,11 +421,11 @@ function sampev.onShowDialog(id, style, title, btn1, btn2, text)
 		promoactivated = true
 		return false
 	end
-	if text:find('Введите') then
+	if text:match('Введите') then
 		sendDialogResponse(id, 1, 0, promo)
 		return false
 	end
-	if text:find('Вы действительно хотите использовать промо%-код') then
+	if text:match('Вы действительно хотите использовать промо%-код') then
 		sendDialogResponse(id, 1, 0, '')
 		return false
 	end
@@ -430,60 +450,67 @@ end
 
 -----ХУКИ НА ТЕКСТ
 function sampev.onServerMessage(color, text)
-	if text:find('^Добро пожаловать на Arizona Role Play!$') then
+	if text:match('^Добро пожаловать на Arizona Role Play!$') then
 		connected()
 	end
-	if text:find('^ Администратор %w+_%w+%[%d+%] посадил игрока '..nick..'%[%d+%] в деморган на %d+ минут%. Причина: .+$') then
+	if text:match('^Вы исчерпали количество попыток%. Вы отключены от сервера$') then
+		generatenick()
+	end
+	if text:match('^ Администратор %w+_%w+%[%d+%] посадил игрока '..nick..'%[%d+%] в КПЗ на %d+ минут%. Причина: .+$') then
+		adminname, jailtime, reason = text:match('^ Администратор (%w+_%w+)%[%d+%] посадил игрока '..nick..'[%d+$] в КПЗ на (%d+) минут. Причина: (.+)$')
+		adminkpz()
+	end
+	if text:match('^ Администратор %w+_%w+%[%d+%] посадил игрока '..nick..'%[%d+%] в деморган на %d+ минут%. Причина: .+$') then
 		adminname, jailtime, reason = text:match('^ Администратор (%w+_%w+)%[%d+%] посадил игрока '..nick..'[%d+$] в деморган на (%d+) минут. Причина: (.+)$')
 		jailed()
 	end
-	if text:find('^ Администратор %w+_%w+%[%d+%] кикнул игрока '..nick..'%[%d+%]%. Причина: .+$') then
+	if text:match('^ Администратор %w+_%w+%[%d+%] кикнул игрока '..nick..'%[%d+%]%. Причина: .+$') then
 		adminname, reason = text:match('^ Администратор (%w+_%w+)%[%d+%] кикнул игрока '..nick..'%[%d+%]%. Причина: (.+)$')
 		kicked()
 	end
-	if text:find('^ Администратор %w+_%w+%[%d+%] забанил игрока '..nick..'%[%d+%]%. Причина: .+$') then
+	if text:match('^ Администратор %w+_%w+%[%d+%] забанил игрока '..nick..'%[%d+%]%. Причина: .+$') then
 		adminname, reason = text:match('^ Администратор (%w+_%w+)%[%d+%] забанил игрока '..nick..'%[%d+%]%. Причина: (.+)$')
 		ipban()
 	end
-	if text:find('^Администратор %w+_%w+%[%d+%] забанил игрока '..nick..'%[%d+%] на %d+ дней%. Причина: .+$') then
+	if text:match('^Администратор %w+_%w+%[%d+%] забанил игрока '..nick..'%[%d+%] на %d+ дней%. Причина: .+$') then
 		adminname, reason = text:match('^Администратор (%w+_%w+)%[%d+%] забанил игрока '..nick..'%[%d+%] на %d+ дней%. Причина: (.+)$')
 		noipban()
 	end
-	if text:find('^Поздравляю! Вы достигли %d+%-го уровня!$') then
+	if text:match('^Поздравляю! Вы достигли %d+%-го уровня!$') then
 		pdlvl = text:match('^Поздравляю! Вы достигли (%d+)%-го уровня!$')
+		if pdlvl >= cfg.settings.lvlprokachki then
+			sampstoreupload()
+		end
 		lvlup()
 	end
-	if text:find('^Вы закончили свое лечение%.$') then
-		recreset(1)
+	if text:match('^Вы закончили свое лечение%.$') then
+		reconnect()
 	end
-	if text:find('^Администратор %w+_%w+%[%d+%] вас заспавнил$') then
+	if text:match('^Администратор %w+_%w+%[%d+%] вас заспавнил$') then
 		adminname = text:match('^Администратор (%w+_%w+)%[%d+%] вас заспавнил$')
 		admspawn()
 	end
-	if text:find('^Администратор телепортировал вас на собеседование%.$') then
+	if text:match('^Администратор телепортировал вас на собеседование%.$') then
 		admsobes()
 	end
-	if text:find('^Вы были телепортированы администратором  %w+_%w+$') then
+	if text:match('^Вы были телепортированы администратором  %w+_%w+$') then
 		adminname = text:match('^Вы были телепортированы администратором  (%w+_%w+)$')
 		admtp()
 	end
-	if text:find('^Администратор %w+_%w+%[ID: %d+%] телепортировал вас на координаты: .+,.+,.+$') then
+	if text:match('^Администратор %w+_%w+%[ID: %d+%] телепортировал вас на координаты: .+,.+,.+$') then
 		adminname = text:match('^Администратор (%w+_%w+)%[ID: %d+%] телепортировал вас на координаты: .+,.+,.+$')
 		admcoordtp()
 	end
 end
 
 function onPrintLog(text)
-	if text:find('^Disconnected%.') then
-		recreset()
+	if text:match('^%[NET%] Disconnected%.$') then
+		resetall()
 	end
-	if text:find('^The connection was lost%. Reconnecting in %d+ seconds%.') then
-		recreset()
-	end
-	if text:find('^Bad nickname$') then
+	if text:match('^%[NET%] Bad nickname$') then
 		generatenick()
 	end
-	if text:find('^You are banned$') then
+	if text:match('^%[NET%] You are banned$') then
 		count = count + 1
 		if count == 20 then
 			if cfg.telegram.ipbanuveda == 1 then
@@ -498,43 +525,58 @@ function admsobes()
 	if cfg.telegram.admsobesuveda == 1 then
 		sendtg('[Farmila Ultimate]\n\nТелепортировали на собеседование\nНик: '..nick..'\nСервер: '..servername..'\n\nПерезаходим на сервер')
 	end
-	recreset(1)
+	reconnect()
 end
 
 function admspawn()
 	if cfg.telegram.admspawnuveda == 1 then
 		sendtg('[Farmila Ultimate]\n\nЗаспавнил админ\nНик: '..nick..'\nСервер: '..servername..'\nНик админа: '..adminname..'\n\nПерезаходим на сервер')
 	end
-	recreset(1)
+	reconnect()
 end
 
 function admtp()
 	if cfg.telegram.admtpuveda == 1 then
 		sendtg('[Farmila Ultimate]\n\nТелепортировал админ\nНик: '..nick..'\nСервер: '..servername..'\nНик админа: '..adminname..'\n\nПерезаходим на сервер')
 	end
-	recreset(1)
+	reconnect()
 end
 
 function admcoordtp()
 	if cfg.telegram.admcoordtpuveda == 1 then
 		sendtg('[Farmila Ultimate]\n\nТелепортировал админ по кордам\nНик: '..nick..'\nСервер: '..servername..'\nНик админа: '..adminname..'\n\nПерезаходим на сервер')
 	end
-	recreset(1)
+	reconnect()
+end
+
+function adminkpz()
+	generatenick()
+	if cfg.telegram.adminkpzuveda == 1 then
+		sendtg('[Farmila Ultimate]\n\nПосадили в КПЗ\nНик: '..nick..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\n\nАккаунт прожил: '..chas..' ч. '..minut..' мин. '..sekund..' сек. ')
+	end
+	timerstop = true
 end
 
 function kicked()
 	if cfg.telegram.kickuveda == 1 then
 		sendtg('[Farmila Ultimate]\n\nКикнули\nНик: '..nick..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'')
 	end
-	recreset(1)
 end
 
 function jailed()
-	timerstop = true
-	if cfg.telegram.jailuveda == 1 then
-		sendtg('[Farmila Ultimate]\n\nПосадили в деморган\nНик: '..nick..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\nВремя: '..jailtime..'\n\nАккаунт прожил: '..chas..' ч. '..minut..' мин. '..sekund..' сек. ')
+	if cfg.settings.demorganlimit > jailtime then
+		if cfg.telegram.jailuveda == 1 then
+			sendtg('[Farmila Ultimate]\n\nПосадили в деморган\nНик: '..nick..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\nВремя: '..jailtime..'\n\nАккаунт прожил: '..chas..' ч. '..minut..' мин. '..sekund..' сек. ')
+		end
+		timerstop = true
+		generatenick()
+	else
+		if cfg.telegram.jailuveda == 1 then
+			sendtg('[Farmila Ultimate]\n\nПосадили в деморган\nНик: '..nick..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\nВремя: '..jailtime..'')
+		end
+		wait(jailtime * 60000 + 30000)
+		reconnect()
 	end
-	generatenick()
 end
 
 function registered()
@@ -606,25 +648,12 @@ function onRunCommand(cmd)
 	if cmd:find'!test' then
 		sendtg('[Farmila Ultimate]\n\nТест уведомлений Telegram\nВаш сервер: '..servername)
 	end
-	if cmd:find('!play') or cmd:find('!stop') or cmd:find('!loop') then
+	if cmd:find('!play') or cmd:find('!stop') then
 		runRoute(cmd)
 		return false
 	end
 end
 
------ДЛЯ СБРОСА ВСЕХ ПЕРЕМЕННЫХ ПРИ РЕКОННЕКТЕ
-function recreset(recstate)
-	if counter > 1 then
-		runRoute('!stop')
-	end
-	promoactivated = false
-	napisal = false
-	counter = 0
-	count = 0
-	if recstate == 1 then
-		reconnect()
-	end
-end
 -----РАНДОМ СКИН
 function randomskin()
 	newTask(function()
@@ -637,13 +666,6 @@ function randomskin()
 		end
 		sendClickTextdraw(521)
 	end)
-end
-
------ХУЙНЯ
-function onSendRPC(id, bs)
-	if id == 128 then
-		return true
-	end
 end
 
 -----ТУТ ВСЮ ХУЙНЮ КОТОРАЯ БУДЕТ ПРОИСХОДИТЬ ПРИ СПАВНЕ АККА ЗАРЕГАННОГО БОТОМ
@@ -674,9 +696,10 @@ end
 -----ВСЁ ЧТО БУДЕТ ПРОИСХОДИТЬ ПО ОКОНЧАНИЮ МАРШРУТА
 function routefinished()
 	sendInput('/beg')
-	print('[\x1b[0;33mFarmila Ultimate\x1b[37m] \x1b[0;36mАккаунт начал стоять зарабатывать деньги.\x1b[0;37m')
+	print('[\x1b[0;33mFarmila Ultimate\x1b[37m] \x1b[0;36mАккаунт начал зарабатывать деньги.\x1b[0;37m')
 end
 
+-----ROUTE PLAYER
 local bitstream = {
 	onfoot = bitStream.new(),
 	incar = bitStream.new(),
