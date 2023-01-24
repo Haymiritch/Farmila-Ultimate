@@ -15,24 +15,24 @@ local temppass = ('')
 local servername = ('Сервер неизвестен')
 local serverip = ('Айпи сервера неизвестен')
 local promo = ('mason')
-local referal = ('Farmila_Ultimate')
+local referal = ('Farmila_Referal')
 
 local rep = false
 local loop = false
 local packet, veh = {}, {}
 local counter = 0
 
+local timer = false
 local count = 0
 local sekund = 0
 local minut = 0
 local chas = 0
 local promoactivated = false
-local timerstop = false
 local napisal = false
 
 ss.InitApiKey(cfg.sampstore.tokenss)
 
--- НЕ ТРОГАЙТЕ ТО ЧТО ВВЕРХУ(ну и снизу тоже не надо) ИНАЧЕ СКРИПТ ТРАХ БАБАХ БУДЕТ
+-- НЕ ТРОГАЙТЕ ТО ЧТО ВВЕРХУ(ну и снизу тоже не надо) ИНАЧЕ СКРИПТ СЛОМАЕТСЯ
 ----------------------------------------------------------------------------
 local link = ('https://api.telegram.org/bot' .. cfg.telegram.tokenbot .. '/sendMessage?chat_id=' .. cfg.telegram.chatid .. '&text=')
 -----ЕБАТОРИЯ С ТГ УВЕДАМИ/ЗАПРОСАМИ/САМП СТОРОМ
@@ -147,13 +147,13 @@ function logaccount()
 	end
 end
 
------ХУЕТА ДЛЯ САМП СТОРА
+-----ДЛЯ САМП СТОРА
 function sampstoreupload()
 	newTask(function()
 		sendInput('/mn')
-		repeat wait(0) until promoactivated
-		wait(5000)
+		wait(15000)
 		logaccount()
+		namen = getNick()
 		if cfg.sampstore.vilagivat == 1 then
 			local response = requests.get('https://api.ipify.org')
 			if response.status_code == 200 then
@@ -182,6 +182,16 @@ end
 
 -----ПРИ ЗАГРУЗКЕ СКРИПТА
 function onLoad()
+	newTask(function()
+		while true do
+			wait(10000)
+			local score = getScore()
+			if score == cfg.settings.lvlprokachki and napisal == true then
+				sampstoreupload()
+				napisal = false
+			end
+		end
+	end)
 	if cfg.settings.lvlprokachki < 6 then
 		cfg.settings.lvlprokachki = 6
 	end
@@ -207,13 +217,13 @@ function onLoad()
 	end
 	print('\x1b[0;36m------------------------------------------------------------------------\x1b[37m')
 	print('')
-	print('			\x1b[0;33mFARMILA ULTIMATE V1\x1b[37m  - \x1b[0;32mЗАГРУЖЕН!\x1b[37m           ')
+	print('			\x1b[0;33mFARMILA ULTIMATE\x1b[37m  - \x1b[0;32mЗАГРУЖЕН!\x1b[37m           ')
 	print('           \x1b[0;33m                  REBORN    \x1b[37m                                         ')
 	print('')
 	print('\x1b[0;36m------------------------------------------------------------------------\x1b[37m')
 end
 
------КЛЮЧ ГЕНА ХУЙНИ
+-----КЛЮЧ ГЕНА РАНДОМ Е
 function random(min, max)
 	local ms = tostring(math.ceil(socket.gettime()))
 	math.randomseed(os.time()+ms)
@@ -246,7 +256,7 @@ function generatepass()
 end
 
 
------СЪЁБ СО СПАВНА
+-----ПОБЕГ СО СПАВНА
 function pobeg()
 	if cfg.settings.spawnroute == 1 and lvl < cfg.settings.lvlprokachki then
 		newTask(function()
@@ -421,11 +431,11 @@ function sampev.onShowDialog(id, style, title, btn1, btn2, text)
 		promoactivated = true
 		return false
 	end
-	if text:match('Введите') then
+	if text:find('Введите') then
 		sendDialogResponse(id, 1, 0, promo)
 		return false
 	end
-	if text:match('Вы действительно хотите использовать промо%-код') then
+	if text:find('Вы действительно хотите использовать') then
 		sendDialogResponse(id, 1, 0, '')
 		return false
 	end
@@ -475,13 +485,6 @@ function sampev.onServerMessage(color, text)
 	if text:match('^Администратор %w+_%w+%[%d+%] забанил игрока '..nick..'%[%d+%] на %d+ дней%. Причина: .+$') then
 		adminname, reason = text:match('^Администратор (%w+_%w+)%[%d+%] забанил игрока '..nick..'%[%d+%] на %d+ дней%. Причина: (.+)$')
 		noipban()
-	end
-	if text:match('^Поздравляю! Вы достигли %d+%-го уровня!$') then
-		pdlvl = text:match('^Поздравляю! Вы достигли (%d+)%-го уровня!$')
-		if pdlvl >= cfg.settings.lvlprokachki then
-			sampstoreupload()
-		end
-		lvlup()
 	end
 	if text:match('^Вы закончили свое лечение%.$') then
 		reconnect()
@@ -570,18 +573,13 @@ function jailed()
 		end
 		timerstop = true
 		generatenick()
-	else
-		if cfg.telegram.jailuveda == 1 then
-			sendtg('[Farmila Ultimate]\n\nПосадили в деморган\nНик: '..nick..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\nВремя: '..jailtime..'')
-		end
-		wait(jailtime * 60000 + 30000)
-		reconnect()
 	end
 end
 
 function registered()
 	if cfg.telegram.reguveda == 1 then
 		sendtg('[Farmila Ultimate]\n\nЗарегистрировались\nНик: '..nick..'\nСервер: '..servername)
+		timerstop = false
 	end
 end
 
@@ -613,31 +611,24 @@ function ipban()
 	timerstop = true
 end
 
-function lvlup()
-	if cfg.telegram.levelupuveda == 1 then
-		sendtg('[Farmila Ultimate]\n\nПовысил уровень \nНик: '..nick..'\nСервер: '..servername..'\nНовый Уровень: '..pdlvl)
-	end
-end
-
 function timeron()
-	timerstop = false
 	newTask(function()
 		while true do wait(0)
-			if not timerstop then
+			if timer then
 				wait(1000)
 				sekund = sekund + 1
+				
 				if sekund == 60 then
 					minut = minut + 1
-					sekund = sekund - 60
+					sekund = sekund - sekund
 				elseif minut == 60 then
 					chas = chas + 1
-					minut = minut - 60
+					minut = minut - minut
 				end
 			else
-				secund = 0
-				minut = 0
-				chas = 0
-				break
+				sekund = sekund - sekund
+				minut = minut - minut
+				chas = chas - chas
 			end
 		end
 	end)
@@ -685,6 +676,7 @@ end
 function onProxyConnect()
 	print('Прокси хороший, подключился)')
 end
+
 function onRequestConnect()
 	if cfg.proxy.zahodsproxy == 1 then
 		if not isProxyConnected() then
