@@ -420,11 +420,11 @@ function sampev.onShowDialog(id, style, title, btn1, btn2, text)
 		return false
 	end
 	if title:find("Дополнительная информация") then
-		sendDialogResponse(id, 1, 0, '')
+		sendDialogResponse(id, 0, 0, '')
 		return false
 	end
 	if title:find("Внимание!") then
-		sendDialogResponse(id, 1, 0, '')
+		sendDialogResponse(id, 0, 0, '')
 		return false
 	end
 	if title:find('Этот аккаунт заблокирован!') then
