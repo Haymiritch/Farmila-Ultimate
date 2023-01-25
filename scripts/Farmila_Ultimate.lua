@@ -185,17 +185,12 @@ function onLoad()
 	if cfg.settings.lvlprokachki < 6 then
 		cfg.settings.lvlprokachki = 6
 	end
-	if cfg.settings.randompass == 1 then
-		generatepass()
-	else
-		pass = cfg.settings.pass
-	end
 	newTask(function()
 		while true do
-			wait(0)
-			lvl = getScore()
-			nick = getNick()
-			money = getMoney()
+			wait(1)
+			local lvl = getScore()
+			local nick = getNick()
+			local money = getMoney()
 			setWindowTitle('[Farmila Ultimate] '..nick..' | '..servername..' | Level: '..lvl..' | Money: '..money)
 		end
 		local score = getScore()
@@ -220,8 +215,7 @@ end
 
 -----КЛЮЧ ГЕНА РАНДОМ Е
 function random(min, max)
-	local ms = tostring(math.ceil(socket.gettime()))
-	math.randomseed(os.time()+ms)
+	math.randomseed(os.time()*os.clock())
 	return math.random(min, max)
 end
 
@@ -244,7 +238,7 @@ end
 
 function generatepass()
 	for k = random(8,8),1,-1 do
-		temppass = temppass..string.char(math.random(97, 122))
+		temppass = temppass..string.char(random(97, 122))
 	end
 	pass = temppass
 	temppass = ''
@@ -276,7 +270,6 @@ function resetall()
 	if counter > 1 then
 		runRoute('!stop')
 	end
-	promoactivated = false
 	napisal = false
 	counter = 0
 	count = 0
@@ -399,7 +392,7 @@ function sampev.onShowDialog(id, style, title, btn1, btn2, text)
 		end
 		if title:find("%[3/4%] Выберите цвет кожи") then
 			wait(2500)
-			sendDialogResponse(id, 1, math.random(0, 1), '')
+			sendDialogResponse(id, 1, random(0, 1), '')
 			return false
 		end
 		if title:find("%[4/4%] Откуда вы о нас узнали?") then
@@ -455,7 +448,7 @@ end
 -----ТЕКСТДРАВЫ СО СКИНАМИ
 function sampev.onShowTextDraw(id, data)
 	if data.selectable and data.text == 'selecticon2' and data.position.x == 396.0 and data.position.y == 315.0 then
-        for i = 1, math.random(1, 10) do newTask(sendClickTextdraw, i * 500, id) end
+        for i = 1, random(1, 10) do newTask(sendClickTextdraw, i * 500, id) end
     elseif data.selectable and data.text == 'selecticon3' and data.position.x == 233.0 and data.position.y == 337.0 then
         newTask(sendClickTextdraw, 6000, id)
     end
@@ -539,30 +532,26 @@ end
 -----УВЕДЫ
 function admsobes()
 	if cfg.telegram.admsobesuveda == 1 then
-		sendtg('[Farmila Ultimate]\n\nТелепортировали на собеседование\nНик: '..nick..'\nСервер: '..servername..'\n\nПерезаходим на сервер')
+		sendtg('[Farmila Ultimate]\n\nТелепортировали на собеседование\nНик: '..nick..'\nСервер: '..servername)
 	end
-	reconnect()
 end
 
 function admspawn()
 	if cfg.telegram.admspawnuveda == 1 then
-		sendtg('[Farmila Ultimate]\n\nЗаспавнил админ\nНик: '..nick..'\nСервер: '..servername..'\nНик админа: '..adminname..'\n\nПерезаходим на сервер')
+		sendtg('[Farmila Ultimate]\n\nЗаспавнил админ\nНик: '..nick..'\nСервер: '..servername..'\nНик админа: '..adminname)
 	end
-	reconnect()
 end
 
 function admtp()
 	if cfg.telegram.admtpuveda == 1 then
-		sendtg('[Farmila Ultimate]\n\nТелепортировал админ\nНик: '..nick..'\nСервер: '..servername..'\nНик админа: '..adminname..'\n\nПерезаходим на сервер')
+		sendtg('[Farmila Ultimate]\n\nТелепортировал админ\nНик: '..nick..'\nСервер: '..servername..'\nНик админа: '..adminname)
 	end
-	reconnect()
 end
 
 function admcoordtp()
 	if cfg.telegram.admcoordtpuveda == 1 then
-		sendtg('[Farmila Ultimate]\n\nТелепортировал админ по кордам\nНик: '..nick..'\nСервер: '..servername..'\nНик админа: '..adminname..'\n\nПерезаходим на сервер')
+		sendtg('[Farmila Ultimate]\n\nТелепортировал админ по кордам\nНик: '..nick..'\nСервер: '..servername..'\nНик админа: '..adminname)
 	end
-	reconnect()
 end
 
 function adminkpz()
