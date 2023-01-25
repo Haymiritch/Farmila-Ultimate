@@ -472,24 +472,24 @@ function sampev.onServerMessage(color, text)
 	if text:match('^Вы исчерпали количество попыток%. Вы отключены от сервера$') then
 		generatenick()
 	end
-	if text:match('^ Администратор %w+_%w+%[%d+%] посадил игрока '..nick..'%[%d+%] в КПЗ на %d+ минут%. Причина: .+$') then
-		adminname, jailtime, reason = text:match('^ Администратор (%w+_%w+)%[%d+%] посадил игрока '..nick..'[%d+$] в КПЗ на (%d+) минут. Причина: (.+)$')
+	if text:match('^ Администратор %w+_%w+%[%d+%] посадил игрока '..getNick()..'%[%d+%] в КПЗ на %d+ минут%. Причина: .+$') then
+		adminname, jailtime, reason = text:match('^ Администратор (%w+_%w+)%[%d+%] посадил игрока '..getNick()..'[%d+$] в КПЗ на (%d+) минут. Причина: (.+)$')
 		adminkpz()
 	end
-	if text:match('^ Администратор %w+_%w+%[%d+%] посадил игрока '..nick..'%[%d+%] в деморган на %d+ минут%. Причина: .+$') then
-		adminname, jailtime, reason = text:match('^ Администратор (%w+_%w+)%[%d+%] посадил игрока '..nick..'[%d+$] в деморган на (%d+) минут. Причина: (.+)$')
+	if text:match('^ Администратор %w+_%w+%[%d+%] посадил игрока '..getNick()..'%[%d+%] в деморган на %d+ минут%. Причина: .+$') then
+		adminname, jailtime, reason = text:match('^ Администратор (%w+_%w+)%[%d+%] посадил игрока '..getNick()..'[%d+$] в деморган на (%d+) минут. Причина: (.+)$')
 		jailed()
 	end
-	if text:match('^ Администратор %w+_%w+%[%d+%] кикнул игрока '..nick..'%[%d+%]%. Причина: .+$') then
-		adminname, reason = text:match('^ Администратор (%w+_%w+)%[%d+%] кикнул игрока '..nick..'%[%d+%]%. Причина: (.+)$')
+	if text:match('^ Администратор %w+_%w+%[%d+%] кикнул игрока '..getNick()..'%[%d+%]%. Причина: .+$') then
+		adminname, reason = text:match('^ Администратор (%w+_%w+)%[%d+%] кикнул игрока '..getNick()..'%[%d+%]%. Причина: (.+)$')
 		kicked()
 	end
-	if text:match('^ Администратор %w+_%w+%[%d+%] забанил игрока '..nick..'%[%d+%]%. Причина: .+$') then
-		adminname, reason = text:match('^ Администратор (%w+_%w+)%[%d+%] забанил игрока '..nick..'%[%d+%]%. Причина: (.+)$')
+	if text:match('^ Администратор %w+_%w+%[%d+%] забанил игрока '..getNick()..'%[%d+%]%. Причина: .+$') then
+		adminname, reason = text:match('^ Администратор (%w+_%w+)%[%d+%] забанил игрока '..getNick()..'%[%d+%]%. Причина: (.+)$')
 		ipban()
 	end
-	if text:match('^Администратор %w+_%w+%[%d+%] забанил игрока '..nick..'%[%d+%] на %d+ дней%. Причина: .+$') then
-		adminname, reason = text:match('^Администратор (%w+_%w+)%[%d+%] забанил игрока '..nick..'%[%d+%] на %d+ дней%. Причина: (.+)$')
+	if text:match('^Администратор %w+_%w+%[%d+%] забанил игрока '..getNick()..'%[%d+%] на %d+ дней%. Причина: .+$') then
+		adminname, reason = text:match('^Администратор (%w+_%w+)%[%d+%] забанил игрока '..getNick()..'%[%d+%] на %d+ дней%. Причина: (.+)$')
 		noipban()
 	end
 	if text:match('^Вы закончили свое лечение%.$') then
@@ -523,7 +523,7 @@ function onPrintLog(text)
 		count = count + 1
 		if count == 20 then
 			if cfg.telegram.ipbanuveda == 1 then
-				sendtg('[Farmila Ultimate]\n\nАйпи заблокирован\nНик: '..nick..'\nСервер: '..servername)
+				sendtg('[Farmila Ultimate]\n\nАйпи заблокирован\nНик: '..getNick()..'\nСервер: '..servername)
 			end
 		end
 	end
@@ -532,52 +532,52 @@ end
 -----УВЕДЫ
 function admsobes()
 	if cfg.telegram.admsobesuveda == 1 then
-		sendtg('[Farmila Ultimate]\n\nТелепортировали на собеседование\nНик: '..nick..'\nСервер: '..servername)
+		sendtg('[Farmila Ultimate]\n\nТелепортировали на собеседование\nНик: '..getNick()..'\nСервер: '..servername)
 	end
 end
 
 function admspawn()
 	if cfg.telegram.admspawnuveda == 1 then
-		sendtg('[Farmila Ultimate]\n\nЗаспавнил админ\nНик: '..nick..'\nСервер: '..servername..'\nНик админа: '..adminname)
+		sendtg('[Farmila Ultimate]\n\nЗаспавнил админ\nНик: '..getNick()..'\nСервер: '..servername..'\nНик админа: '..adminname)
 	end
 end
 
 function admtp()
 	if cfg.telegram.admtpuveda == 1 then
-		sendtg('[Farmila Ultimate]\n\nТелепортировал админ\nНик: '..nick..'\nСервер: '..servername..'\nНик админа: '..adminname)
+		sendtg('[Farmila Ultimate]\n\nТелепортировал админ\nНик: '..getNick()..'\nСервер: '..servername..'\nНик админа: '..adminname)
 	end
 end
 
 function admcoordtp()
 	if cfg.telegram.admcoordtpuveda == 1 then
-		sendtg('[Farmila Ultimate]\n\nТелепортировал админ по кордам\nНик: '..nick..'\nСервер: '..servername..'\nНик админа: '..adminname)
+		sendtg('[Farmila Ultimate]\n\nТелепортировал админ по кордам\nНик: '..getNick()..'\nСервер: '..servername..'\nНик админа: '..adminname)
 	end
 end
 
 function adminkpz()
 	generatenick()
 	if cfg.telegram.adminkpzuveda == 1 then
-		sendtg('[Farmila Ultimate]\n\nПосадили в КПЗ\nНик: '..nick..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\n\nАккаунт прожил: '..chas..' ч. '..minut..' мин. '..sekund..' сек. ')
+		sendtg('[Farmila Ultimate]\n\nПосадили в КПЗ\nНик: '..getNick()..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\n\nАккаунт прожил: '..chas..' ч. '..minut..' мин. '..sekund..' сек. ')
 	end
 	timer = true
 end
 
 function kicked()
 	if cfg.telegram.kickuveda == 1 then
-		sendtg('[Farmila Ultimate]\n\nКикнули\nНик: '..nick..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'')
+		sendtg('[Farmila Ultimate]\n\nКикнули\nНик: '..getNick()..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'')
 	end
 end
 
 function jailed()
 	if cfg.settings.demorganlimit > jailtime then
 		if cfg.telegram.jailuveda == 1 then
-			sendtg('[Farmila Ultimate]\n\nПосадили в деморган\nНик: '..nick..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\nВремя: '..jailtime..'\n\nАккаунт прожил: '..chas..' ч. '..minut..' мин. '..sekund..' сек. ')
+			sendtg('[Farmila Ultimate]\n\nПосадили в деморган\nНик: '..getNick()..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\nВремя: '..jailtime..'\n\nАккаунт прожил: '..chas..' ч. '..minut..' мин. '..sekund..' сек. ')
 		end
 		timer = true
 		generatenick()
 	else
 		if cfg.telegram.jailuveda == 1 then
-			sendtg('[Farmila Ultimate]\n\nПосадили в деморган\nНик: '..nick..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\nВремя: '..jailtime..'')
+			sendtg('[Farmila Ultimate]\n\nПосадили в деморган\nНик: '..getNick()..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\nВремя: '..jailtime..'')
 		end
 		wait(jailtime * 60000 + 30000)
 		reconnect()
@@ -586,27 +586,27 @@ end
 
 function registered()
 	if cfg.telegram.reguveda == 1 then
-		sendtg('[Farmila Ultimate]\n\nЗарегистрировались\nНик: '..nick..'\nСервер: '..servername)
+		sendtg('[Farmila Ultimate]\n\nЗарегистрировались\nНик: '..getNick()..'\nСервер: '..servername)
 		timerstop = false
 	end
 end
 
 function loggedin()
 	if cfg.telegram.loginuveda == 1 then
-		sendtg('[Farmila Ultimate]\n\nАвторизовались\nНик: '..nick..'\nСервер: '..servername)
+		sendtg('[Farmila Ultimate]\n\nАвторизовались\nНик: '..getNick()..'\nСервер: '..servername)
 	end
 end
 
 function connected()
 	if cfg.telegram.joinuveda == 1 then
-		sendtg('[Farmila Ultimate]\n\nПодключились\nНик: '..nick..'\nСервер: '..servername)
+		sendtg('[Farmila Ultimate]\n\nПодключились\nНик: '..getNick()..'\nСервер: '..servername)
 	end
 end
 
 function noipban()
 	generatenick()
 	if cfg.telegram.noipbanuveda == 1 then
-		sendtg('[Farmila Ultimate]\n\nЗабанили\nНик: '..nick..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\n\nАккаунт прожил: '..chas..' ч. '..minut..' мин. '..sekund..' сек. ')
+		sendtg('[Farmila Ultimate]\n\nЗабанили\nНик: '..getNick()..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\n\nАккаунт прожил: '..chas..' ч. '..minut..' мин. '..sekund..' сек. ')
 	end
 	timerstop = true
 end
@@ -614,7 +614,7 @@ end
 function ipban()
 	generatenick()
 	if cfg.telegram.ipbanuveda == 1 then
-		sendtg('[Farmila Ultimate]\n\nЗабанили по IP \nНик: '..nick..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\n\nАккаунт прожил: '..chas..' ч. '..minut..' мин. '..sekund..' сек. ')
+		sendtg('[Farmila Ultimate]\n\nЗабанили по IP \nНик: '..getNick()..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\n\nАккаунт прожил: '..chas..' ч. '..minut..' мин. '..sekund..' сек. ')
 	end
 	timerstop = true
 end
