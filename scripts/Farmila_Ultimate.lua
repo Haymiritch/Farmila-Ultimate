@@ -136,6 +136,9 @@ function logaccount()
 	local response = requests.get('https://api.ipify.org')
 	if response.status_code == 200 then
 		local regip = response.text
+		local nick = getNick()
+		local lvl = getScore()
+		local money = getMoney()
 		acclog(nick..' | '..pass..' | '..lvl..' | '..serverip..' | '..money..' | '..servername..' | '..regip..'\n')
 		print('[\x1b[0;33mFarmila Ultimate\x1b[37m] \x1b[0;36mАккаунт успешно сохранен с рег айпи.\x1b[0;37m')
 	else
@@ -149,49 +152,36 @@ end
 
 -----ДЛЯ САМП СТОРА
 function sampstoreupload()
+	sendInput('/mn')
 	newTask(function()
-		sendInput('/mn')
-		wait(15000)
-		logaccount()
-		namen = getNick()
+		local response = requests.get('https://api.ipify.org')
+		if response.status_code == 200 then
+			local regip = response.text
+		end
+		wait(10000)
 		if cfg.sampstore.vilagivat == 1 then
 			local response = requests.get('https://api.ipify.org')
 			if response.status_code == 200 then
 				local regip = response.text
+				local namen = getNick()
 				local upload_res = ss.UploadAccount(serverip, cfg.sampstore.price, namen, pass, cfg.sampstore.infopokupo, cfg.sampstore.infoakk, regip)
 				if upload_res then
 					print('[\x1b[0;33mFarmila Ultimate\x1b[37m] \x1b[0;36mАккаунт успешно выложен на самп-стор.\x1b[0;37m')
 					if cfg.telegram.ssakkuveda == 1 then
 						sendtg('[Farmila Ultimate]\n\nАккаунт успешно выложен на сампстор!\nНик: '..nick..'\nСервер: '..servername..'\nЛевел: '..lvl..'\nСервер: '..servername..'\nЦена за аккаунт: '..cfg.sampstore.price..'\nЦену вы должны были указать в конфиге.')
 					end
-					generatenick()
-				end
-			else
-				local upload_res = ss.UploadAccount(serverip, cfg.sampstore.price, namen, pass, cfg.sampstore.infopokupo, cfg.sampstore.infoakk, _)
-				if upload_res then
-					print('[\x1b[0;33mFarmila Ultimate\x1b[37m] \x1b[0;36mАккаунт успешно выложен на самп-стор без рег айпи.\x1b[0;37m')
-					if cfg.telegram.ssakkuveda == 1 then
-						sendtg('[Farmila Ultimate]\n\nАккаунт успешно выложен на сампстор!\nНик: '..nick..'\nСервер: '..servername..'\nЛевел: '..lvl..'\nСервер: '..servername..'\nЦена за аккаунт: '..cfg.sampstore.price..'\nЦену вы должны были указать в конфиге.')
-					end
-					generatenick()
 				end
 			end
 		end
+		logaccount()
+		wait(2500)
+		generatenick()
+		napisal = true
 	end)
 end
 
 -----ПРИ ЗАГРУЗКЕ СКРИПТА
 function onLoad()
-	newTask(function()
-		while true do
-			wait(10000)
-			local score = getScore()
-			if score == cfg.settings.lvlprokachki and napisal == true then
-				sampstoreupload()
-				napisal = false
-			end
-		end
-	end)
 	if cfg.settings.lvlprokachki < 6 then
 		cfg.settings.lvlprokachki = 6
 	end
@@ -207,6 +197,11 @@ function onLoad()
 			nick = getNick()
 			money = getMoney()
 			setWindowTitle('[Farmila Ultimate] '..nick..' | '..servername..' | Level: '..lvl..' | Money: '..money)
+		end
+		local score = getScore()
+		if score == cfg.settings.lvlprokachki and napisal == true then
+			sampstoreupload()
+			napisal = false
 		end
 	end)
 	if cfg.settings.randomnick == 1 then
@@ -260,6 +255,7 @@ end
 function pobeg()
 	if cfg.settings.spawnroute == 1 and lvl < cfg.settings.lvlprokachki then
 		newTask(function()
+			wait(6000)
 			local x, y = getPosition()
 			if x >= 1700 and x <= 1800 and y >= -1950 and y <= -1850 then -- old losantos spawn
 				print('[\x1b[0;33mFarmila Ultimate\x1b[37m] \x1b[0;36mВы на старом спавне ЛС.\x1b[0;37m')
@@ -390,48 +386,63 @@ function onConnect()
 end
 -----ДИАЛОГИ
 function sampev.onShowDialog(id, style, title, btn1, btn2, text)
-	if title:find('1/4') then
-        sendDialogResponse(id, 1, 0, pass)
-        return false
-    end
-    if title:find('2/4') then
-		sendDialogResponse(id, 1, 0, '')
-        return false
-    end
-	if title:find('3/4') then
-		sendDialogResponse(id, 1, 0, '')
-        return false
-    end
-	if title:find('Откуда вы о нас узнали?') then
-		sendDialogResponse(id, 1, 1, '')
-        return false
-	end
-	if title:find('Введите ник пригласившего?') then
-		sendDialogResponse(id, 1, 0, referal)
-		joinedreg = true
-		joinedlog = false
-        return false
-	end
-	if title:find('Дополнительная') then
+	newTask(function()
+		if title:find("%(1/4%) Пароль") then
+			wait(2500)
+			sendDialogResponse(id, 1, 0, cfg.settings.pass)
+			return false
+		end
+		if title:find("%[2/4%] Выберите ваш пол") then
+			wait(2500)
+			sendDialogResponse(id, 1, 0, '')
+			return false
+		end
+		if title:find("%[3/4%] Выберите цвет кожи") then
+			wait(2500)
+			sendDialogResponse(id, 1, math.random(0, 1), '')
+			return false
+		end
+		if title:find("%[4/4%] Откуда вы о нас узнали?") then
+			wait(2500)
+			sendDialogResponse(id, 1, 1, '')
+			return false
+		end
+		if title:find("%[4/4%] Введите ник пригласившего?") then
+			wait(2500)
+			sendDialogResponse(id, 1, 0, referal)
+			registered()
+			joinedreg = true
+			joinedlog = false
+			return false
+		end
+		if title:find('Авторизация') then
+			sendDialogResponse(id, 1, 0, cfg.settings.pass)
+			joinedlog = true
+			joinedreg = false
+			return false
+		end
+	end)
+	if title:find("Акции") then
 		sendDialogResponse(id, 0, 0, '')
 		return false
 	end
-	if title:find('Авторизация') then
-		sendDialogResponse(id, 1, 0, pass)
-		joinedlog = true
-		joinedreg = false
+	if title:find("Дополнительная информация") then
+		sendDialogResponse(id, 1, 0, '')
+		return false
+	end
+	if title:find("Внимание!") then
+		sendDialogResponse(id, 1, 0, '')
 		return false
 	end
 	if title:find('Этот аккаунт заблокирован!') then
 		generatenick()
 		return false
 	end
-	if title:find('Игровое меню') and not promoactivated then
+	if title:find('Игровое меню') then
 		sendDialogResponse(id, 1, 10, '')
-		promoactivated = true
 		return false
 	end
-	if text:find('Введите') then
+	if text:find('Введите промо') then
 		sendDialogResponse(id, 1, 0, promo)
 		return false
 	end
@@ -443,9 +454,11 @@ end
 
 -----ТЕКСТДРАВЫ СО СКИНАМИ
 function sampev.onShowTextDraw(id, data)
-	if id == 521 then
-		randomskin()
-	end
+	if data.selectable and data.text == 'selecticon2' and data.position.x == 396.0 and data.position.y == 315.0 then
+        for i = 1, math.random(1, 10) do newTask(sendClickTextdraw, i * 500, id) end
+    elseif data.selectable and data.text == 'selecticon3' and data.position.x == 233.0 and data.position.y == 337.0 then
+        newTask(sendClickTextdraw, 6000, id)
+    end
 end
 
 -----ПРИ СПАВНЕ С РАНЕЕ ЗАРЕГАННОГО АККА
@@ -557,7 +570,7 @@ function adminkpz()
 	if cfg.telegram.adminkpzuveda == 1 then
 		sendtg('[Farmila Ultimate]\n\nПосадили в КПЗ\nНик: '..nick..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\n\nАккаунт прожил: '..chas..' ч. '..minut..' мин. '..sekund..' сек. ')
 	end
-	timerstop = true
+	timer = true
 end
 
 function kicked()
@@ -571,8 +584,14 @@ function jailed()
 		if cfg.telegram.jailuveda == 1 then
 			sendtg('[Farmila Ultimate]\n\nПосадили в деморган\nНик: '..nick..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\nВремя: '..jailtime..'\n\nАккаунт прожил: '..chas..' ч. '..minut..' мин. '..sekund..' сек. ')
 		end
-		timerstop = true
+		timer = true
 		generatenick()
+	else
+		if cfg.telegram.jailuveda == 1 then
+			sendtg('[Farmila Ultimate]\n\nПосадили в деморган\nНик: '..nick..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\nВремя: '..jailtime..'')
+		end
+		wait(jailtime * 60000 + 30000)
+		reconnect()
 	end
 end
 
@@ -612,28 +631,28 @@ function ipban()
 end
 
 function timeron()
+	timer = false
 	newTask(function()
 		while true do wait(0)
-			if timer then
+			if not timer then
 				wait(1000)
 				sekund = sekund + 1
-				
 				if sekund == 60 then
 					minut = minut + 1
-					sekund = sekund - sekund
+					sekund = sekund - 60
 				elseif minut == 60 then
 					chas = chas + 1
-					minut = minut - minut
+					minut = minut - 60
 				end
 			else
-				sekund = sekund - sekund
-				minut = minut - minut
-				chas = chas - chas
+				secund = 0
+				minut = 0
+				chas = 0
+				break
 			end
 		end
 	end)
 end
-
 -----КОМАНДЫ
 function onRunCommand(cmd)
 	if cmd:find'!test' then
@@ -645,21 +664,7 @@ function onRunCommand(cmd)
 	end
 end
 
------РАНДОМ СКИН
-function randomskin()
-	newTask(function()
-		local skin = random(0, 10)
-		local endskin = 0
-		while endskin ~= skin do
-			sendClickTextdraw(520)
-			wait(500)
-			endskin = endskin + 1
-		end
-		sendClickTextdraw(521)
-	end)
-end
-
------ТУТ ВСЮ ХУЙНЮ КОТОРАЯ БУДЕТ ПРОИСХОДИТЬ ПРИ СПАВНЕ АККА ЗАРЕГАННОГО БОТОМ
+-----ТУТ ВСЮ ФИГНЮ КОТОРАЯ БУДЕТ ПРОИСХОДИТЬ ПРИ СПАВНЕ АККА ЗАРЕГАННОГО БОТОМ
 function onReceiveRPC(id, bs)
 	if id == 129 and joinedreg then
 		registered()
