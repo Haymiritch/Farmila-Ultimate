@@ -247,7 +247,7 @@ end
 
 -----онаец ян яоюбмю
 function pobeg()
-	if cfg.settings.spawnroute == 1 and lvl < cfg.settings.lvlprokachki then
+	if cfg.settings.spawnroute == 1 then
 		newTask(function()
 			wait(6000)
 			local x, y = getPosition()
