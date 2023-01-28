@@ -60,11 +60,8 @@ function sendtg(text)
     chat_id = configtg.chat_id,
     text = url_encode(u8(text))
   }
-  print(params.text)
   local url = ('https://api.telegram.org/bot%s/sendMessage'):format(configtg.token)
   local response = requests.get({url, params=params})
-  print(response.status_code)
-  print(response.text)
 end
 ---------------------------------------------
 
@@ -95,10 +92,10 @@ end
 function sampstoreupload()
 	newTask(function()
 		sendInput('/mn')
-		wait(10000)
 		if cfg.sampstore.vilagivat == 1 then
 			local response = requests.get('https://api.ipify.org')
 			if response.status_code == 200 then
+				wait(10000)
 				local regip = response.text
 				local namen = getNick()
 				local upload_res = ss.UploadAccount(serverip, cfg.sampstore.price, namen, pass, cfg.sampstore.infopokupo, cfg.sampstore.infoakk, regip)
@@ -124,7 +121,6 @@ function sampstoreupload()
 			end
 		end
 		logaccount()
-		wait(2500)
 		generatenick()
 		napisal = true
 	end)
