@@ -338,7 +338,6 @@ function sampev.onShowDialog(id, style, title, btn1, btn2, text)
 		if title:find("%[4/4%] ¬ведите ник пригласившего?") then
 			wait(2500)
 			sendDialogResponse(id, 1, 0, referal)
-			registered()
 			joinedreg = true
 			joinedlog = false
 			return false
