@@ -7,7 +7,7 @@ local ltn12 = require('ltn12')
 local json = require('cjson.safe')
 local xml = require('xml')
 local md5sum = require('md5') -- TODO: Make modular?
-local base64 = require('base64')
+local mime = require('mime')
 
 local requests = {
   _DESCRIPTION = 'Http requests made simpler',
@@ -67,6 +67,9 @@ function requests.request(method, url, args)
 
   if type(url) == "table" then
     request = url
+    if not request.url and request[1] then
+      request.url = table.remove(request, 1)
+    end
   else
     request = args or {}
     request.url = url
@@ -91,11 +94,13 @@ function _requests.make_request(request)
     method = request.method,
     url = request.url,
     headers = request.headers,
-    source = ltn12.source.string(request.data),
     sink = ltn12.sink.table(response_body),
     redirect = request.allow_redirects,
     proxy = request.proxy
   }
+  if request.data then
+    full_request.source = ltn12.source.string(request.data)
+  end
 
   local response = {}
   local ok
@@ -157,7 +162,9 @@ end
 -- Add to the HTTP header
 function _requests.create_header(request)
   request.headers = request.headers or {}
-  request.headers['Content-Length'] = request.data:len()
+  if request.data then
+    request.headers['Content-Length'] = request.data:len()
+  end
 
   if request.cookies then
     if request.headers.cookie then
@@ -174,10 +181,10 @@ end
 
 --Makes sure that the data is in a format that can be sent
 function _requests.check_data(request)
-  request.data = request.data or ''
-
   if type(request.data) == "table" then
     request.data = json.encode(request.data)
+  elseif request.data then
+    request.data = tostring(request.data)
   end
 end
 
@@ -196,14 +203,13 @@ end
 
 --Create the Authorization header for Basic Auth
 function _requests.basic_auth_header(request)
-  local encoded = base64.encode(request.auth.user..':'..request.auth.password)
+  local encoded = mime.b64(request.auth.user..':'..request.auth.password)
   request.headers.Authorization = 'Basic '..encoded
 end
 
 -- Create digest authorization string for request header TODO: Could be better, but it should work
 function _requests.digest_create_header_string(auth)
-  local authorization = ''
-  authorization = 'Digest username="'..auth.user..'", realm="'..auth.realm..'", nonce="'..auth.nonce
+  local authorization = 'Digest username="'..auth.user..'", realm="'..auth.realm..'", nonce="'..auth.nonce
   authorization = authorization..'", uri="'..auth.uri..'", qop='..auth.qop..', nc='..auth.nc
   authorization = authorization..', cnonce="'..auth.cnonce..'", response="'..auth.response..'"'
 
