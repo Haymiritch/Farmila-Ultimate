@@ -105,7 +105,19 @@ function sampstoreupload()
 				if upload_res then
 					print('[\x1b[0;33mFarmila Ultimate\x1b[37m] \x1b[0;36mАккаунт успешно выложен на самп-стор.\x1b[0;37m')
 					if cfg.telegram.ssakkuveda == 1 then
-						msg = ('[Farmila Ultimate]\n\nАккаунт успешно выложен на сампстор!\nНик: '..nick..'\nСервер: '..servername..'\nЛевел: '..lvl..'\nСервер: '..servername..'\nЦена за аккаунт: '..cfg.sampstore.price..'\nЦену вы должны были указать в конфиге.')
+						msg = ([[
+						[Farmila Ultimate]
+						
+						Аккаунт успешно выложен на сампстор!
+						
+						Nick: %s
+						Server: %s
+						Level: %s
+						Reg-Ip: %s
+						Цена за аккаунт: %s
+						
+						Цену вы должны были указать в конфиге.
+						]]):format(namen, servername, lvl, regip, cfg.sampstore.price)
 						newTask(sendtg, false, msg)
 					end
 				end
@@ -186,7 +198,7 @@ function pobeg()
 				local put = random(1,51)
 				runRoute('!play lsnew'..put)
 			else
-				print('[\x1b[0;33mFarmila Ultimate\x1b[37m] \x1b[0;36mВы на спавне СФ/ЛС, либо скрипт не смог определить спавн.\x1b[0;37m')
+				print('[\x1b[0;33mFarmila Ultimate\x1b[37m] \x1b[0;36mВы на спавне СФ/ЛВ, либо скрипт не смог определить спавн. Маршрута не будет\x1b[0;37m')
 			end
 		end)
 	end
@@ -450,7 +462,13 @@ function onPrintLog(text)
 		count = count + 1
 		if count == 20 then
 			if cfg.telegram.ipbanuveda == 1 then
-				msg = ("[Farmila Ultimate]\n\nАйпи заблокирован\nНик: '..getNick()..'\nСервер: '..servername")
+				msg = ([[
+				[Farmila Ultimate]
+						
+				Айпи заблокирован.					
+				Nick: %s
+				Server: %s
+				]]):format(getNick(), servername)
 				newTask(sendtg, false, msg)
 			end
 		end
@@ -460,28 +478,55 @@ end
 -----Уведомления
 function admsobes()
 	if cfg.telegram.admsobesuveda == 1 then
-		msg = ('[Farmila Ultimate]\n\nТелепортировали на собеседование\nНик: '..getNick()..'\nСервер: '..servername)
+		msg = ([[
+		[Farmila Ultimate]
+				
+		Телепортировали на собеседование.					
+		Nick: %s
+		Server: %s
+		]]):format(getNick(), servername)
 		newTask(sendtg, false, msg)
 	end
 end
 
 function admspawn()
 	if cfg.telegram.admspawnuveda == 1 then
-		msg = ('[Farmila Ultimate]\n\nЗаспавнил админ\nНик: '..getNick()..'\nСервер: '..servername..'\nНик админа: '..adminname)
+		msg = ([[
+		[Farmila Ultimate]
+				
+		Заспавнил админ.					
+		Nick: %s
+		Server: %s
+		Ник админа: %s
+		]]):format(getNick(), servername, adminname)
 		newTask(sendtg, false, msg)
 	end
 end
 
 function admtp()
 	if cfg.telegram.admtpuveda == 1 then
-		msg = ('[Farmila Ultimate]\n\nТелепортировал админ\nНик: '..getNick()..'\nСервер: '..servername..'\nНик админа: '..adminname)
+		msg = ([[
+		[Farmila Ultimate]
+				
+		Телепортировал админ.				
+		Nick: %s
+		Server: %s
+		Ник админа: %s
+		]]):format(getNick(), servername, adminname)
 		newTask(sendtg, false, msg)
 	end
 end
 
 function admcoordtp()
 	if cfg.telegram.admcoordtpuveda == 1 then
-		msg = sendtg('[Farmila Ultimate]\n\nТелепортировал админ по кордам\nНик: '..getNick()..'\nСервер: '..servername..'\nНик админа: '..adminname)
+		msg = ([[
+		[Farmila Ultimate]
+				
+		Телепортировал админ по координатам.				
+		Nick: %s
+		Server: %s
+		Ник админа: %s
+		]]):format(getNick(), servername, adminname)
 		newTask(sendtg, false, msg)
 	end
 end
@@ -490,6 +535,18 @@ function adminkpz()
 	generatenick()
 	if cfg.telegram.adminkpzuveda == 1 then
 		msg = sendtg('[Farmila Ultimate]\n\nПосадили в КПЗ\nНик: '..getNick()..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\n\nАккаунт прожил: '..chas..' ч. '..minut..' мин. '..sekund..' сек. ')
+		msg = ([[
+		[Farmila Ultimate]
+				
+		Посадили в КПЗ.		
+		Nick: %s
+		Server: %s
+		
+		Ник админа: %s
+		Причина: %s
+		
+		Аккаунт прожил: %s ч. %s мин. %s с.
+		]]):format(getNick(), servername, adminname, reason, chas, minut, sekund)
 		newTask(sendtg, false, msg)
 	end
 	timer = true
@@ -497,7 +554,16 @@ end
 
 function kicked()
 	if cfg.telegram.kickuveda == 1 then
-		msg = ('[Farmila Ultimate]\n\nКикнули\nНик: '..getNick()..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'')
+		msg = ([[
+		[Farmila Ultimate]
+				
+		Кикнули.
+		Nick: %s
+		Server: %s
+		
+		Ник админа: %s
+		Причина: %s
+		]]):format(getNick(), servername, adminname, reason)
 		newTask(sendtg, false, msg)
 	end
 end
@@ -505,14 +571,36 @@ end
 function jailed()
 	if cfg.settings.demorganlimit > jailtime then
 		if cfg.telegram.jailuveda == 1 then
-			msg = ('[Farmila Ultimate]\n\nПосадили в деморган\nНик: '..getNick()..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\nВремя: '..jailtime..'\n\nАккаунт прожил: '..chas..' ч. '..minut..' мин. '..sekund..' сек. ')
+			msg = ([[
+			[Farmila Ultimate]
+					
+			Посадили в деморган.	
+			Nick: %s
+			Server: %s
+			
+			Ник админа: %s
+			Причина: %s
+			Время: %s 
+			
+			Аккаунт прожил: %s ч. %s мин. %s с.
+			]]):format(getNick(), servername, adminname, reason, jailtime, chas, minut, sekund)
 			newTask(sendtg, false, msg)
 		end
 		timer = true
 		generatenick()
 	else
 		if cfg.telegram.jailuveda == 1 then
-			msg = ('[Farmila Ultimate]\n\nПосадили в деморган\nНик: '..getNick()..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\nВремя: '..jailtime..'')
+			msg = ([[
+			[Farmila Ultimate]
+			
+			Посадили в деморган.	
+			Nick: %s
+			Server: %s
+			
+			Ник админа: %s
+			Причина: %s
+			Время: %s .
+			]]):format(getNick(), servername, adminname, reason, jailtime)
 			newTask(sendtg, false, msg)
 		end
 		wait(jailtime * 60000 + 30000)
@@ -522,7 +610,13 @@ end
 
 function registered()
 	if cfg.telegram.reguveda == 1 then
-		msg = ('[Farmila Ultimate]\n\nЗарегистрировались\nНик: '..getNick()..'\nСервер: '..servername)
+		msg = ([[
+		[Farmila Ultimate]
+			
+		Зарегистрировались.	
+		Nick: %s
+		Server: %s
+		]]):format(getNick(), servername)
 		newTask(sendtg, false, msg)
 		timerstop = false
 	end
@@ -530,14 +624,26 @@ end
 
 function loggedin()
 	if cfg.telegram.loginuveda == 1 then
-		msg = ('[Farmila Ultimate]\n\nАвторизовались\nНик: '..getNick()..'\nСервер: '..servername)
+		msg = ([[
+		[Farmila Ultimate]
+			
+		Авторизовались.	
+		Nick: %s
+		Server: %s
+		]]):format(getNick(), servername)
 		newTask(sendtg, false, msg)
 	end
 end
 
 function connected()
 	if cfg.telegram.joinuveda == 1 then
-		msg = ('[Farmila Ultimate]\n\nПодключились\nНик: '..getNick()..'\nСервер: '..servername)
+		msg = ([[
+		[Farmila Ultimate]
+			
+		Подключились.	
+		Nick: %s
+		Server: %s
+		]]):format(getNick(), servername)
 		newTask(sendtg, false, msg)
 	end
 end
@@ -545,7 +651,18 @@ end
 function noipban()
 	generatenick()
 	if cfg.telegram.noipbanuveda == 1 then
-		msg = ('[Farmila Ultimate]\n\nЗабанили\nНик: '..getNick()..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\n\nАккаунт прожил: '..chas..' ч. '..minut..' мин. '..sekund..' сек. ')
+		msg = ([[
+		[Farmila Ultimate]
+		
+		Аккаунт заблокировали.	
+		Nick: %s
+		Server: %s
+			
+		Ник админа: %s
+		Причина: %s
+			
+		Аккаунт прожил: %s ч. %s мин. %s с.
+		]]):format(getNick(), servername, adminname, reason, chas, minut, sekund)
 		newTask(sendtg, false, msg)
 	end
 	timerstop = true
@@ -554,7 +671,18 @@ end
 function ipban()
 	generatenick()
 	if cfg.telegram.ipbanuveda == 1 then
-		msg = ('[Farmila Ultimate]\n\nЗабанили по IP \nНик: '..getNick()..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\n\nАккаунт прожил: '..chas..' ч. '..minut..' мин. '..sekund..' сек. ')
+		msg = ([[
+		[Farmila Ultimate]
+		
+		Аккаунт заблокировали по IP.	
+		Nick: %s
+		Server: %s
+			
+		Ник админа: %s
+		Причина: %s
+			
+		Аккаунт прожил: %s ч. %s мин. %s с.
+		]]):format(getNick(), servername, adminname, reason, chas, minut, sekund)
 		newTask(sendtg, false, msg)
 	end
 	timerstop = true
@@ -589,6 +717,12 @@ end
 function onRunCommand(cmd)
 	if cmd:find'!test' then
 		msg = ('[Farmila Ultimate]\n\nТест уведомлений Telegram\nВаш сервер: '..servername)
+		msg = ([[
+		[Farmila Ultimate]
+		
+		Тестирование уведомлений Telegram.	
+		Server: %s
+		]]):format(servername)
 		newTask(sendtg, false, msg)
 	end
 	if cmd:find('!play') or cmd:find('!stop') then
