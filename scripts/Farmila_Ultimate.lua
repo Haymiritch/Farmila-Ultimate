@@ -1,3 +1,8 @@
+--Кодеры: Haymiritch, Chokomami1488(Ведро говна)
+--Спасибо: Dimiano
+
+--Вылаживать только под нашими именами!
+
 os.execute('color 0')
 
 require('addon')
@@ -11,7 +16,6 @@ local cfg = inicfg.load(nil, 'Farmila_Settings')
 local ffi = require('ffi')
 local socket = require 'socket'
 
-local temppass = ('')
 local servername = ('Сервер неизвестен')
 local serverip = ('Айпи сервера неизвестен')
 local promo = ('mason')
@@ -27,110 +31,50 @@ local count = 0
 local sekund = 0
 local minut = 0
 local chas = 0
-local promoactivated = false
-local napisal = false
+local napisal = true
 
 ss.InitApiKey(cfg.sampstore.tokenss)
 
 -- НЕ ТРОГАЙТЕ ТО ЧТО ВВЕРХУ(ну и снизу тоже не надо) ИНАЧЕ СКРИПТ СЛОМАЕТСЯ
-----------------------------------------------------------------------------
-local link = ('https://api.telegram.org/bot' .. cfg.telegram.tokenbot .. '/sendMessage?chat_id=' .. cfg.telegram.chatid .. '&text=')
------ЕБАТОРИЯ С ТГ УВЕДАМИ/ЗАПРОСАМИ/САМП СТОРОМ
-local ansi_decode={
-  [128]='\208\130',[129]='\208\131',[130]='\226\128\154',[131]='\209\147',[132]='\226\128\158',[133]='\226\128\166',
-  [134]='\226\128\160',[135]='\226\128\161',[136]='\226\130\172',[137]='\226\128\176',[138]='\208\137',[139]='\226\128\185',
-  [140]='\208\138',[141]='\208\140',[142]='\208\139',[143]='\208\143',[144]='\209\146',[145]='\226\128\152',
-  [146]='\226\128\153',[147]='\226\128\156',[148]='\226\128\157',[149]='\226\128\162',[150]='\226\128\147',[151]='\226\128\148',
-  [152]='\194\152',[153]='\226\132\162',[154]='\209\153',[155]='\226\128\186',[156]='\209\154',[157]='\209\156',
-  [158]='\209\155',[159]='\209\159',[160]='\194\160',[161]='\209\142',[162]='\209\158',[163]='\208\136',
-  [164]='\194\164',[165]='\210\144',[166]='\194\166',[167]='\194\167',[168]='\208\129',[169]='\194\169',
-  [170]='\208\132',[171]='\194\171',[172]='\194\172',[173]='\194\173',[174]='\194\174',[175]='\208\135',
-  [176]='\194\176',[177]='\194\177',[178]='\208\134',[179]='\209\150',[180]='\210\145',[181]='\194\181',
-  [182]='\194\182',[183]='\194\183',[184]='\209\145',[185]='\226\132\150',[186]='\209\148',[187]='\194\187',
-  [188]='\209\152',[189]='\208\133',[190]='\209\149',[191]='\209\151'
+----------------------------------------------------------------------------telegram
+local encoding = require('encoding')
+
+encoding.default = 'CP1251'
+u8 = encoding.UTF8
+
+local configtg = {
+  token = cfg.telegram.tokenbot,
+  chat_id = cfg.telegram.chatid
 }
 
-function AnsiToUtf8(s)
-  local r, b = ''
-  for i = 1, s and s:len() or 0 do
-    b = s:byte(i)
-    if b < 128 then
-      r = r..string.char(b)
-    else
-      if b > 239 then
-        r = r..'\209'..string.char(b - 112)
-      elseif b > 191 then
-        r = r..'\208'..string.char(b - 48)
-      elseif ansi_decode[b] then
-        r = r..ansi_decode[b]
-      else
-        r = r..'_'
-      end
-    end
-  end
-  return r
+function char_to_hex(str)
+  return ('%%%02X'):format(str:byte())
 end
 
-function threadHandle(runner, url, args, resolve, reject)
-    local t = runner(url, args)
-    local r = t:get(0)
-    while not r do
-        r = t:get(0)
-        wait(0)
-    end
-    local status = t:status()
-    if status == 'completed' then
-        local ok, result = r[1], r[2]
-        if ok then resolve(result) else reject(result) end
-    elseif err then
-        reject(err)
-    elseif status == 'canceled' then
-        reject(status)
-    end
-    t:cancel(0)
+function url_encode(str)
+  return str:gsub('([^%w])', char_to_hex)
 end
 
-function requestRunner()
-    return effil.thread(function(u, a)
-        local https = require 'ssl.https'
-        local ok, result = pcall(https.request, u, a)
-        if ok then
-            return {true, result}
-        else
-            return {false, result}
-        end
-    end)
-end
-
-function async_http_request(url, args, resolve, reject)
-    local runner = requestRunner()
-    if not reject then reject = function() end end
-    newTask(function()
-        threadHandle(runner, url, args, resolve, reject)
-    end)
-end
-
-function encodeUrl(str)
-    str = str:gsub(' ', '%+')
-    str = str:gsub('\n', '%%0A')
-    return AnsiToUtf8(str)
-end
-
-function sendtg(msg)
-    msg = msg:gsub('{......}', '')
-    msg = encodeUrl(msg)
-    async_http_request('https://api.telegram.org/bot' .. cfg.telegram.tokenbot .. '/sendMessage?chat_id=' .. cfg.telegram.chatid .. '&text='..msg,'', function(result) end)
+function sendtg(text)
+  local params = {
+    chat_id = configtg.chat_id,
+    text = url_encode(u8(text))
+  }
+  print(params.text)
+  local url = ('https://api.telegram.org/bot%s/sendMessage'):format(configtg.token)
+  local response = requests.get({url, params=params})
+  print(response.status_code)
+  print(response.text)
 end
 ---------------------------------------------
 
------СЕЙВ АККОВ В ФАЙЛ
+-----Сохранение аккаунтов
 function acclog(text)
 	local f = io.open(getPath()..'\\scripts\\Farmila_Accounts.txt', 'a')
 	f:write(text)
 	f:close()
 end
 
------ТЕКСТ ДЛЯ СЕЙВА АККОВ
 function logaccount()
 	-- Nick_Name | password | level | ip | money | servername | regip |
 	local response = requests.get('https://api.ipify.org')
@@ -145,19 +89,12 @@ function logaccount()
 		acclog(nick..' | '..pass..' | '..lvl..' | '..serverip..' | '..money..' | '..servername..'\n')
 		print('[\x1b[0;33mFarmila Ultimate\x1b[37m] \x1b[0;36mАккаунт успешно сохранен без рег айпи.\x1b[0;37m')
 	end
-	if cfg.sampstore.vilagivat == 0 then
-		generatenick()
-	end
 end
 
------ДЛЯ САМП СТОРА
+-----Для samp-store
 function sampstoreupload()
-	sendInput('/mn')
 	newTask(function()
-		local response = requests.get('https://api.ipify.org')
-		if response.status_code == 200 then
-			local regip = response.text
-		end
+		sendInput('/mn')
 		wait(10000)
 		if cfg.sampstore.vilagivat == 1 then
 			local response = requests.get('https://api.ipify.org')
@@ -180,7 +117,7 @@ function sampstoreupload()
 	end)
 end
 
------ПРИ ЗАГРУЗКЕ СКРИПТА
+-----Загрузка скрипта
 function onLoad()
 	if cfg.settings.lvlprokachki < 6 then
 		cfg.settings.lvlprokachki = 6
@@ -213,17 +150,14 @@ function onLoad()
 	print('\x1b[0;36m------------------------------------------------------------------------\x1b[37m')
 end
 
------КЛЮЧ ГЕНА РАНДОМ Е
+-----Ключ рандома + сам рандом
 function random(min, max)
 	math.randomseed(os.time()*os.clock())
 	return math.random(min, max)
 end
 
------ГЕНЕРАЦИЯ РАНДОМ НИКА
+-----Генерация рандом ника из файла
 function generatenick()
-	if cfg.settings.randompass == 1 then
-		generatepass()
-	end
 	local names_and_surnames = {}
 	for line in io.lines(getPath('config\\randomnick.txt')) do
 		names_and_surnames[#names_and_surnames + 1] = line
@@ -233,19 +167,10 @@ function generatenick()
     local nick = ('%s_%s'):format(name, surname)
     setNick(nick)
 	print('[\x1b[0;33mFarmila Ultimate\x1b[37m] \x1b[0;36mИзменили ник на: \x1b[0;32m'..getNick()..'\x1b[37m.')
-	reconnect()
+	reconnect(1)
 end
 
-function generatepass()
-	for k = random(8,8),1,-1 do
-		temppass = temppass..string.char(random(97, 122))
-	end
-	pass = temppass
-	temppass = ''
-end
-
-
------ПОБЕГ СО СПАВНА
+-----Побег со спавна
 function pobeg()
 	if cfg.settings.spawnroute == 1 then
 		newTask(function()
@@ -275,7 +200,7 @@ function resetall()
 	count = 0
 end
 
------ПРИ ПОДКЛЮЧЕНИИ
+-----При подключении
 function onConnect()
 	resetall()
 	serverip = getIP()
@@ -377,7 +302,8 @@ function onConnect()
 		referal = cfg.referal.wednesday
 	end
 end
------ДИАЛОГИ
+
+-----Диалоги
 function sampev.onShowDialog(id, style, title, btn1, btn2, text)
 	newTask(function()
 		if title:find("%(1/4%) Пароль") then
@@ -432,29 +358,29 @@ function sampev.onShowDialog(id, style, title, btn1, btn2, text)
 		return false
 	end
 	if title:find('Игровое меню') then
-		sendDialogResponse(id, 1, 10, '')
+		sendDialogResponse(id, 1, 11, "")
 		return false
 	end
-	if text:find('Введите промо') then
+	if id == 9469 then
 		sendDialogResponse(id, 1, 0, promo)
 		return false
 	end
-	if text:find('Вы действительно хотите использовать') then
-		sendDialogResponse(id, 1, 0, '')
+	if id == 9476 then
+		sendDialogResponse(id, 1, 0, "")
 		return false
 	end
 end
 
------ТЕКСТДРАВЫ СО СКИНАМИ
+-----Текстдравы
 function sampev.onShowTextDraw(id, data)
-	if data.selectable and data.text == 'selecticon2' and data.position.x == 396.0 and data.position.y == 315.0 then
+	if data.selectable and data.text == 'selecticon2' and data.position.x == 396.0 and data.position.y == 315.0 then --Dimiano - пасиба
         for i = 1, random(1, 10) do newTask(sendClickTextdraw, i * 500, id) end
     elseif data.selectable and data.text == 'selecticon3' and data.position.x == 233.0 and data.position.y == 337.0 then
         newTask(sendClickTextdraw, 6000, id)
     end
 end
 
------ПРИ СПАВНЕ С РАНЕЕ ЗАРЕГАННОГО АККА
+-----При заходе с ранее зарегистрированого аккаунта
 function sampev.onSetInterior(interior)
 	if interior == 0 and joinedlog then
 		loggedin()
@@ -464,7 +390,7 @@ function sampev.onSetInterior(interior)
 	end
 end
 
------ХУКИ НА ТЕКСТ
+-----Собития на текст
 function sampev.onServerMessage(color, text)
 	if text:match('^Добро пожаловать на Arizona Role Play!$') then
 		connected()
@@ -529,7 +455,7 @@ function onPrintLog(text)
 	end
 end
 
------УВЕДЫ
+-----Уведомления
 function admsobes()
 	if cfg.telegram.admsobesuveda == 1 then
 		sendtg('[Farmila Ultimate]\n\nТелепортировали на собеседование\nНик: '..getNick()..'\nСервер: '..servername)
@@ -619,6 +545,7 @@ function ipban()
 	timerstop = true
 end
 
+--Секундомер
 function timeron()
 	timer = false
 	newTask(function()
@@ -642,7 +569,8 @@ function timeron()
 		end
 	end)
 end
------КОМАНДЫ
+
+-----Команды
 function onRunCommand(cmd)
 	if cmd:find'!test' then
 		sendtg('[Farmila Ultimate]\n\nТест уведомлений Telegram\nВаш сервер: '..servername)
@@ -653,7 +581,7 @@ function onRunCommand(cmd)
 	end
 end
 
------ТУТ ВСЮ ФИГНЮ КОТОРАЯ БУДЕТ ПРОИСХОДИТЬ ПРИ СПАВНЕ АККА ЗАРЕГАННОГО БОТОМ
+-----При спавне с рагеранного акка (2)
 function onReceiveRPC(id, bs)
 	if id == 129 and joinedreg then
 		registered()
@@ -663,7 +591,7 @@ function onReceiveRPC(id, bs)
 	end
 end
 
-----ПРОКСИ
+----Прокси (крайне не стабильно)
 function onProxyError()
 	print('Ошибка подключения к прокси.')
 end
@@ -679,13 +607,13 @@ function onRequestConnect()
 	end
 end
 
------ВСЁ ЧТО БУДЕТ ПРОИСХОДИТЬ ПО ОКОНЧАНИЮ МАРШРУТА
+-----При окончании маршрута
 function routefinished()
 	sendInput('/beg')
 	print('[\x1b[0;33mFarmila Ultimate\x1b[37m] \x1b[0;36mАккаунт начал зарабатывать деньги.\x1b[0;37m')
 end
 
------ROUTE PLAYER
+-----Route Player
 local bitstream = {
 	onfoot = bitStream.new(),
 	incar = bitStream.new(),
