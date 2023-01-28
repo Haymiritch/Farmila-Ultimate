@@ -105,7 +105,8 @@ function sampstoreupload()
 				if upload_res then
 					print('[\x1b[0;33mFarmila Ultimate\x1b[37m] \x1b[0;36mАккаунт успешно выложен на самп-стор.\x1b[0;37m')
 					if cfg.telegram.ssakkuveda == 1 then
-						sendtg('[Farmila Ultimate]\n\nАккаунт успешно выложен на сампстор!\nНик: '..nick..'\nСервер: '..servername..'\nЛевел: '..lvl..'\nСервер: '..servername..'\nЦена за аккаунт: '..cfg.sampstore.price..'\nЦену вы должны были указать в конфиге.')
+						msg = ('[Farmila Ultimate]\n\nАккаунт успешно выложен на сампстор!\nНик: '..nick..'\nСервер: '..servername..'\nЛевел: '..lvl..'\nСервер: '..servername..'\nЦена за аккаунт: '..cfg.sampstore.price..'\nЦену вы должны были указать в конфиге.')
+						newTask(sendtg, false, msg)
 					end
 				end
 			end
@@ -449,7 +450,8 @@ function onPrintLog(text)
 		count = count + 1
 		if count == 20 then
 			if cfg.telegram.ipbanuveda == 1 then
-				sendtg('[Farmila Ultimate]\n\nАйпи заблокирован\nНик: '..getNick()..'\nСервер: '..servername)
+				msg = ("[Farmila Ultimate]\n\nАйпи заблокирован\nНик: '..getNick()..'\nСервер: '..servername")
+				newTask(sendtg, false, msg)
 			end
 		end
 	end
@@ -458,52 +460,60 @@ end
 -----Уведомления
 function admsobes()
 	if cfg.telegram.admsobesuveda == 1 then
-		sendtg('[Farmila Ultimate]\n\nТелепортировали на собеседование\nНик: '..getNick()..'\nСервер: '..servername)
+		msg = ('[Farmila Ultimate]\n\nТелепортировали на собеседование\nНик: '..getNick()..'\nСервер: '..servername)
+		newTask(sendtg, false, msg)
 	end
 end
 
 function admspawn()
 	if cfg.telegram.admspawnuveda == 1 then
-		sendtg('[Farmila Ultimate]\n\nЗаспавнил админ\nНик: '..getNick()..'\nСервер: '..servername..'\nНик админа: '..adminname)
+		msg = ('[Farmila Ultimate]\n\nЗаспавнил админ\nНик: '..getNick()..'\nСервер: '..servername..'\nНик админа: '..adminname)
+		newTask(sendtg, false, msg)
 	end
 end
 
 function admtp()
 	if cfg.telegram.admtpuveda == 1 then
-		sendtg('[Farmila Ultimate]\n\nТелепортировал админ\nНик: '..getNick()..'\nСервер: '..servername..'\nНик админа: '..adminname)
+		msg = ('[Farmila Ultimate]\n\nТелепортировал админ\nНик: '..getNick()..'\nСервер: '..servername..'\nНик админа: '..adminname)
+		newTask(sendtg, false, msg)
 	end
 end
 
 function admcoordtp()
 	if cfg.telegram.admcoordtpuveda == 1 then
-		sendtg('[Farmila Ultimate]\n\nТелепортировал админ по кордам\nНик: '..getNick()..'\nСервер: '..servername..'\nНик админа: '..adminname)
+		msg = sendtg('[Farmila Ultimate]\n\nТелепортировал админ по кордам\nНик: '..getNick()..'\nСервер: '..servername..'\nНик админа: '..adminname)
+		newTask(sendtg, false, msg)
 	end
 end
 
 function adminkpz()
 	generatenick()
 	if cfg.telegram.adminkpzuveda == 1 then
-		sendtg('[Farmila Ultimate]\n\nПосадили в КПЗ\nНик: '..getNick()..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\n\nАккаунт прожил: '..chas..' ч. '..minut..' мин. '..sekund..' сек. ')
+		msg = sendtg('[Farmila Ultimate]\n\nПосадили в КПЗ\nНик: '..getNick()..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\n\nАккаунт прожил: '..chas..' ч. '..minut..' мин. '..sekund..' сек. ')
+		newTask(sendtg, false, msg)
 	end
 	timer = true
 end
 
 function kicked()
 	if cfg.telegram.kickuveda == 1 then
-		sendtg('[Farmila Ultimate]\n\nКикнули\nНик: '..getNick()..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'')
+		msg = ('[Farmila Ultimate]\n\nКикнули\nНик: '..getNick()..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'')
+		newTask(sendtg, false, msg)
 	end
 end
 
 function jailed()
 	if cfg.settings.demorganlimit > jailtime then
 		if cfg.telegram.jailuveda == 1 then
-			sendtg('[Farmila Ultimate]\n\nПосадили в деморган\nНик: '..getNick()..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\nВремя: '..jailtime..'\n\nАккаунт прожил: '..chas..' ч. '..minut..' мин. '..sekund..' сек. ')
+			msg = ('[Farmila Ultimate]\n\nПосадили в деморган\nНик: '..getNick()..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\nВремя: '..jailtime..'\n\nАккаунт прожил: '..chas..' ч. '..minut..' мин. '..sekund..' сек. ')
+			newTask(sendtg, false, msg)
 		end
 		timer = true
 		generatenick()
 	else
 		if cfg.telegram.jailuveda == 1 then
-			sendtg('[Farmila Ultimate]\n\nПосадили в деморган\nНик: '..getNick()..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\nВремя: '..jailtime..'')
+			msg = ('[Farmila Ultimate]\n\nПосадили в деморган\nНик: '..getNick()..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\nВремя: '..jailtime..'')
+			newTask(sendtg, false, msg)
 		end
 		wait(jailtime * 60000 + 30000)
 		reconnect()
@@ -512,27 +522,31 @@ end
 
 function registered()
 	if cfg.telegram.reguveda == 1 then
-		sendtg('[Farmila Ultimate]\n\nЗарегистрировались\nНик: '..getNick()..'\nСервер: '..servername)
+		msg = ('[Farmila Ultimate]\n\nЗарегистрировались\nНик: '..getNick()..'\nСервер: '..servername)
+		newTask(sendtg, false, msg)
 		timerstop = false
 	end
 end
 
 function loggedin()
 	if cfg.telegram.loginuveda == 1 then
-		sendtg('[Farmila Ultimate]\n\nАвторизовались\nНик: '..getNick()..'\nСервер: '..servername)
+		msg = ('[Farmila Ultimate]\n\nАвторизовались\nНик: '..getNick()..'\nСервер: '..servername)
+		newTask(sendtg, false, msg)
 	end
 end
 
 function connected()
 	if cfg.telegram.joinuveda == 1 then
-		sendtg('[Farmila Ultimate]\n\nПодключились\nНик: '..getNick()..'\nСервер: '..servername)
+		msg = ('[Farmila Ultimate]\n\nПодключились\nНик: '..getNick()..'\nСервер: '..servername)
+		newTask(sendtg, false, msg)
 	end
 end
 
 function noipban()
 	generatenick()
 	if cfg.telegram.noipbanuveda == 1 then
-		sendtg('[Farmila Ultimate]\n\nЗабанили\nНик: '..getNick()..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\n\nАккаунт прожил: '..chas..' ч. '..minut..' мин. '..sekund..' сек. ')
+		msg = ('[Farmila Ultimate]\n\nЗабанили\nНик: '..getNick()..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\n\nАккаунт прожил: '..chas..' ч. '..minut..' мин. '..sekund..' сек. ')
+		newTask(sendtg, false, msg)
 	end
 	timerstop = true
 end
@@ -540,7 +554,8 @@ end
 function ipban()
 	generatenick()
 	if cfg.telegram.ipbanuveda == 1 then
-		sendtg('[Farmila Ultimate]\n\nЗабанили по IP \nНик: '..getNick()..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\n\nАккаунт прожил: '..chas..' ч. '..minut..' мин. '..sekund..' сек. ')
+		msg = ('[Farmila Ultimate]\n\nЗабанили по IP \nНик: '..getNick()..'\nСервер: '..servername..'\n\nНик админа: '..adminname..'\nПричина: '..reason..'\n\nАккаунт прожил: '..chas..' ч. '..minut..' мин. '..sekund..' сек. ')
+		newTask(sendtg, false, msg)
 	end
 	timerstop = true
 end
@@ -573,7 +588,8 @@ end
 -----Команды
 function onRunCommand(cmd)
 	if cmd:find'!test' then
-		sendtg('[Farmila Ultimate]\n\nТест уведомлений Telegram\nВаш сервер: '..servername)
+		msg = ('[Farmila Ultimate]\n\nТест уведомлений Telegram\nВаш сервер: '..servername)
+		newTask(sendtg, false, msg)
 	end
 	if cmd:find('!play') or cmd:find('!stop') then
 		runRoute(cmd)
