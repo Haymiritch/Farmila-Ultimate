@@ -9,7 +9,7 @@ https://www.blast.hk/threads/164838/
 В комплект идёт скрипт на Python для автоматического запуска ботов на все 24 сервера (Для Windows и Linux, требуется)
 
 Требования: raksamp lite (коробка), effil, sampev (в коробке), addon (в коробке), samp-store for rakbot/raksamp, requests, ffi (в коробке), inicfg
-За актуальными изменениями следите тут: https://t.me/farmila_ultimate666 (там же и все подробности)
+За актуальными изменениями следите тут: https://t.me/farmila777 (там же и все подробности)
 
 
 Спойлер: Функционал
